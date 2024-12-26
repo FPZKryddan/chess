@@ -1,4 +1,4 @@
-import { testMove } from "../utils/moves";
+import { getPiece, testMove } from "../utils/moves";
 
 export function getPossibleMovesPawn(position, board) {
     const {x, y} = position
@@ -28,9 +28,23 @@ export function getPossibleMovesPawn(position, board) {
         possibleMoves = [...possibleMoves, ...attack1]
     if (attack2.length > 0 && attack2[0].type == "attack")
         possibleMoves = [...possibleMoves, ...attack2]
-        
-
-    // en passant
     
+    
+    // en passant
+    const testEnpassant1 = getPiece({x: x-1, y: y}, board)
+    const testEnpassant2 = getPiece({x: x+1, y: y}, board)
+    if (testEnpassant1) {
+        if (attack1.length > 0 && attack1[0].type == "move" &&
+            testEnpassant1.color != team && 'enpassant' in testEnpassant1
+        )
+            possibleMoves = [...possibleMoves, {x: attack1[0].x, y: attack1[0].y, type: "enpassant"}]
+    }
+    if (testEnpassant2) {
+        if (attack2.length > 0 && attack2[0].type == "move" &&
+            testEnpassant2.color != team && 'enpassant' in testEnpassant2
+        )
+            possibleMoves = [...possibleMoves, {x: attack2[0].x, y: attack2[0].y, type: "enpassant"}]
+    }
+
     return possibleMoves
 }

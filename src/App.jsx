@@ -24,6 +24,7 @@ function App() {
 	const [validMoves, setValidMoves] = useState([]);
 	const [heldPiece, setHeldPiece] = useState({});
 	const [promotionState, setPromotionState] = useState(null);
+	const [enpassantPiece, setEnpassantPiece] = useState(null);
 
 	const boardRefs = useRef(
 		Array.from({ length: BOARD_SIZE }, () =>
@@ -57,16 +58,15 @@ function App() {
 			// check if click cords are in validMoves positions
 			// Commit move
 			const attemptedMove = validMoves.filter((move) => move.x === x && move.y === y)
-			console.log(attemptedMove)
 			if (attemptedMove.length > 0) {
 				// castling
 				if (attemptedMove[0].type == "castle") {
 					const direction = (attemptedMove[0].x < heldPiece.position.x) ? -1 : 1
 					const rook = {piece: "rook", color: heldPiece.color, position: {x: (direction < 0) ? 0 : 7, y: attemptedMove[0].y}}
-					commitMove(rook, {x: heldPiece.position.x + direction, y: rook.position.y}, board, false)
-					commitMove(heldPiece, {x: heldPiece.position.x + direction * 2, y: heldPiece.position.y}, board, false)
+					commitMove(rook, {x: heldPiece.position.x + direction, y: rook.position.y, type: "castle"}, board, false)
+					commitMove(heldPiece, {x: heldPiece.position.x + direction * 2, y: heldPiece.position.y, type: "castle"}, board, false)
 				} else 
-					commitMove(heldPiece, {x, y}, board, false)
+					commitMove(heldPiece, attemptedMove[0], board, false)
 			} 
 			setHeldPiece({})
 			setValidMoves([])
@@ -112,26 +112,49 @@ function App() {
 		// invalid if own king gets checked
 		// create temp board and simulate move made
 		const tempBoard = structuredClone(board)
-		const position = {x: move.x, y: move.y}
-		commitMove(selectedPiece, position, tempBoard, true)
+		commitMove(selectedPiece, move, tempBoard, true)
 		if (isCheck(turn, tempBoard)) 
 			return false
 		return true
 	}
 
-	const commitMove = (selectedPiece, position, gameBoard, simulated) => {
+	const commitMove = (selectedPiece, move, gameBoard, simulated) => {
 		const { x: oldX, y: oldY} = selectedPiece.position
-		const { x: newX, y: newY } = position
+		const { x: newX, y: newY } = move
 		const newPiece = {piece: selectedPiece.piece, color: selectedPiece.color, moves: (selectedPiece.moves || 0) + 1}
+
+		// if enpassant attack
+		if (move.type == "enpassant") 
+			gameBoard[enpassantPiece.y][enpassantPiece.x] = {}
+		
 		gameBoard[oldY][oldX] = {}
 		gameBoard[newY][newX] = newPiece
 		if (!simulated) {
+			// en passant move
+			if (selectedPiece.piece == "pawn" && Math.abs(newY - oldY) == 2){ 
+				gameBoard[newY][newX] = {...newPiece, enpassant: true}
+
+				// remove old enpassant piece if exists on board
+				if (enpassantPiece) {
+					const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x]
+					gameBoard[enpassantPiece.y][enpassantPiece.x] = {piece: oldEnpassantPiece.piece, color: oldEnpassantPiece.color, moves: oldEnpassantPiece.moves}
+				}
+
+				setEnpassantPiece({x: newX, y: newY})
+			} else if (enpassantPiece) {
+				const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x]
+				if (Object.keys(oldEnpassantPiece) > 0)
+					gameBoard[enpassantPiece.y][enpassantPiece.x] = {piece: oldEnpassantPiece.piece, color: oldEnpassantPiece.color, moves: oldEnpassantPiece.moves}
+				setEnpassantPiece(null)
+			}
+			
 			setBoard(gameBoard)
+
 			// check checkmate
 			if (isCheckmate(turn == "w" ? "b" : "w", gameBoard)) {
 				console.log("checkmate")
 			}
-
+			
 			// promotion
 			if (selectedPiece.piece == "pawn" && (newY == 7 || newY == 0)) {
 				setPromotionState({x: newX, y: newY})
@@ -150,7 +173,6 @@ function App() {
 				// if not a piece, ignore
 				if (Object.keys(piece).length == 0)
 					continue
-				console.log("piece: " + piece.piece + " color: " + piece.color)
 				if (piece.piece == "king" && piece.color == team)
 					return {x: x, y: y}
 			}
@@ -205,7 +227,7 @@ function App() {
 
 				for(let move of possibleMoves) {
 					const tempBoard = structuredClone(gameBoard)
-					commitMove({piece: piece.piece, color: piece.color, position: {x, y }}, {x: move.x, y: move.y}, tempBoard, true)
+					commitMove({piece: piece.piece, color: piece.color, position: {x, y }}, move, tempBoard, true)
 					if (!isCheck(team, gameBoard))
 						return false
 				}
@@ -244,7 +266,8 @@ function App() {
 							<h1 className={`${piece.color == "w" ? "text-white" : "text-black"} font-bold`} >{piece.piece}</h1>
 							
 							<div className={`absolute top-0 left-0 w-full h-full pointer-events-none ` 
-								+ (validMoves.some((move) => move.x === x && move.y === y && move.type === "attack") ? "bg-red-400 opacity-70" : "")
+								+ (validMoves.some((move) => move.x === x && move.y === y 
+								&& (move.type === "attack" || move.type === "enpassant")) ? "bg-red-400 opacity-70" : "")
 								+ (validMoves.some((move) => move.x === x && move.y === y && move.type === "move") ? "bg-blue-400 opacity-70" : "")
 								+ (validMoves.some((move) => move.x === x && move.y === y && move.type === "castle") ? "bg-green-400 opacity-70" : "")}></div>
 

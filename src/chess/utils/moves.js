@@ -59,3 +59,13 @@ export const testMove = (position, board, team) => {
 
     return [{x, y, type: "move"}]
 }
+
+export const getPiece = (position, board) => {
+    const { x, y } = position 
+    if (x < 0 || x > 7) return null;
+    if (y < 0 || y > 7) return null;
+
+    if (Object.keys(board[y][x]).length > 0) 
+        return board[y][x]
+    return null
+}
