@@ -30,6 +30,8 @@ export const crawl = (direction, position, team, board, moves) => {
     if (Object.keys(testCell).length > 0){
         if (testCell.color != team)
             moves.push({x, y, type: "attack"})
+        else if (testCell.color == team && testCell.piece == "rook")
+            moves.push({x, y, type: "castle"})
         return moves
     }
 

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { getPossibleMovesRook } from './chess/pieces/Rook'
 import { movesSearchFunctions } from './chess/utils/moves'
 import './App.css'
 
@@ -19,11 +18,12 @@ function App() {
 		[{}, {}, {}, {}, {},{}, {}, {}],
 		[{piece: "pawn", color: "w"}, {piece: "pawn", color: "w"}, {piece: "pawn", color: "w"}, {piece: "pawn", color: "w"}, 
 			{piece: "pawn", color: "w"}, {piece: "pawn", color: "w"}, {piece: "pawn", color: "w"}, {piece: "pawn", color: "w"}],
-		[{piece: "rook", color: "w"}, {piece: "knight", color: "w"}, {piece: "bishop", color: "w"}, {piece: "king", color: "w"},
+		[{piece: "rook", color: "w"}, {}, {}, {piece: "king", color: "w"},
 			 {piece: "queen", color: "w"}, {piece: "bishop", color: "w"}, {piece: "knight", color: "w"}, {piece: "rook", color: "w"}],
 	])
 	const [validMoves, setValidMoves] = useState([]);
 	const [heldPiece, setHeldPiece] = useState({});
+	const [promotionState, setPromotionState] = useState(null);
 
 	const boardRefs = useRef(
 		Array.from({ length: BOARD_SIZE }, () =>
@@ -43,6 +43,8 @@ function App() {
 			const selection = {}
 			selection.piece = piece.piece
 			selection.color = piece.color
+			if ('moves' in piece)
+				selection.moves = piece.moves
 			selection.position = {x, y}
 			setHeldPiece(selection)
 
@@ -54,15 +56,20 @@ function App() {
 		} else { //
 			// check if click cords are in validMoves positions
 			// Commit move
-			const validClick = validMoves.some((move) => move.x === x && move.y === y)
-			if (validClick) {
-				commitMove(heldPiece, {x, y}, board, false)
-				setHeldPiece({})
-				setValidMoves([])
-			} else{
-				setHeldPiece({})
-				setValidMoves([])
-			}
+			const attemptedMove = validMoves.filter((move) => move.x === x && move.y === y)
+			console.log(attemptedMove)
+			if (attemptedMove.length > 0) {
+				// castling
+				if (attemptedMove[0].type == "castle") {
+					const direction = (attemptedMove[0].x < heldPiece.x) ? -1 : 1
+					const rook = {piece: "rook", color: heldPiece.color, position: {x: (direction < 0) ? 0 : 7, y: attemptedMove[0].y}}
+					commitMove(rook, {x: heldPiece.x + direction, y: rook.y}, board, false)
+					commitMove(heldPiece, {x: heldPiece.x + direction * 2, y: heldPiece.y}, board, false)
+				} else 
+					commitMove(heldPiece, {x, y}, board, false)
+			} 
+			setHeldPiece({})
+			setValidMoves([])
 		}
 
 
@@ -71,14 +78,30 @@ function App() {
 	const getPossibleMoves = (piece, position, gameBoard) => {
 		const { x, y } = position
 		const moveSearchFunction = movesSearchFunctions[piece.piece]
-		const moves = moveSearchFunction({x: x, y: y}, gameBoard)
+		let moves = moveSearchFunction({x: x, y: y}, gameBoard)
+		if (piece.piece != "king")
+			moves = moves.filter((move) => move.type != "castle")
 		return moves
 	}
 
 	const validateMoves = (selectedPiece, moves) => {
 		let validatedMoves = []
 		moves.forEach(move => {
-			if (isValidMove(selectedPiece, move)){
+			// castling
+			if (move.type == "castle") {
+				// is valid if the two steps king takes are not checked by enemy
+				const direction = move.x == 0 ? -1 : 1
+				const step1 = {x: selectedPiece.position.x + direction, y: selectedPiece.position.y, type: move.type}
+				const step2 = {x: selectedPiece.position.x + direction * 2, y: selectedPiece.position.y, type: move.type}
+
+				if (!isValidMove(selectedPiece, step1)) return
+				if (!isValidMove(selectedPiece, step2)) return
+				
+				// add valid moves from step2 -> rook
+				for (let x = step2.x; (x >= 0 && x <= 7); x += direction) {
+					validatedMoves = validatedMoves.concat([{x: x, y: step2.y, type: move.type}])
+				}
+			} else if (isValidMove(selectedPiece, move)){
 				validatedMoves = validatedMoves.concat([move])
 			}
 		});
@@ -99,24 +122,28 @@ function App() {
 	const commitMove = (selectedPiece, position, gameBoard, simulated) => {
 		const { x: oldX, y: oldY} = selectedPiece.position
 		const { x: newX, y: newY } = position
+		console.log(selectedPiece)
 		gameBoard[oldY][oldX] = {}
-		gameBoard[newY][newX] = {piece: selectedPiece.piece, color: selectedPiece.color}
+		gameBoard[newY][newX] = {piece: selectedPiece.piece, color: selectedPiece.color, moves: (selectedPiece.moves || 0) + 1}
 		if (!simulated) {
 			setBoard(gameBoard)
+			// check checkmate
+			if (isCheckmate(turn == "w" ? "b" : "w", gameBoard)) {
+				console.log("checkmate")
+			}
+
 			// promotion
-			if (selectedPiece.piece == "pawn")
-				if (newY == 7 || newY == 0) {
-					// handle promotion
-				}
+			if (selectedPiece.piece == "pawn" && (newY == 7 || newY == 0)) {
+				setPromotionState({x: newX, y: newY})
+				return // don't end turn until promotion state is off
+			}
 			
 			// end turn
-			if (turn == "w") setTurn("b")
-			else setTurn("w")
+			endTurn()
 		}
 	}
 
 	const getKingPosition = (team, gameBoard) => {
-		console.log(gameBoard)
 		for (let y = 0; y < 8; y++) {
 			for (let x = 0; x < 8; x++) {
 				const piece = gameBoard[y][x]
@@ -135,7 +162,6 @@ function App() {
 		const kingPos = getKingPosition(team, gameBoard)
 		if (kingPos === false)
 			return true
-		console.log(kingPos)
 
 		let possibleKingAttack = false
 
@@ -163,6 +189,47 @@ function App() {
 		return false
 	}
 
+	const isCheckmate = (team, gameBoard) => {
+		// check if check is blockable
+		// loop through all of checked teams pieces and 
+		if (!isCheck(team, gameBoard))
+			return false
+
+		for (let y = 0; y < BOARD_SIZE; y++) {
+			for (let x = 0; x < BOARD_SIZE; x++) {
+				const piece = gameBoard[y][x];
+				if (Object.keys(piece).length === 0 || piece.color !== team) 
+					continue;
+
+				const possibleMoves = getPossibleMoves(piece, { x, y }, gameBoard)
+
+				for(let move of possibleMoves) {
+					const tempBoard = structuredClone(gameBoard)
+					commitMove({piece: piece.piece, color: piece.color, position: {x, y }}, {x: move.x, y: move.y}, tempBoard, true)
+					if (!isCheck(team, gameBoard))
+						return false
+				}
+
+			}
+		}
+		return true
+	}
+
+	const promotePawn = (promotionPiece) => {
+		if (promotionState) {
+			const tempBoard = structuredClone(board)
+			tempBoard[promotionState.y][promotionState.x] = {piece: promotionPiece, color: turn} 
+			setBoard(tempBoard)
+			setPromotionState(null)
+			endTurn()
+		}
+	}
+
+	const endTurn = () => {
+		if (turn == "w") setTurn("b")
+			else setTurn("w")
+	}
+
 	useEffect(() => {
 		console.log("Valid moves:", validMoves);
 	}, [validMoves]);
@@ -178,11 +245,22 @@ function App() {
 							
 							<div className={`absolute top-0 left-0 w-full h-full pointer-events-none ` 
 								+ (validMoves.some((move) => move.x === x && move.y === y && move.type === "attack") ? "bg-red-400 opacity-70" : "")
-								+ (validMoves.some((move) => move.x === x && move.y === y && move.type === "move") ? "bg-slate-200 opacity-70" : "")}></div>
+								+ (validMoves.some((move) => move.x === x && move.y === y && move.type === "move") ? "bg-blue-400 opacity-70" : "")
+								+ (validMoves.some((move) => move.x === x && move.y === y && move.type === "castle") ? "bg-green-400 opacity-70" : "")}></div>
+
 						</div>
 					))
 				)}
 			</div>
+			{promotionState &&
+				<div className="absolute flex flex-row bg-slate-600">
+					<button className='aspect-square w-16 text-white font-bold hover:bg-gray-700' onClick={() => promotePawn("rook")}>Rook</button>
+					<button className='aspect-square w-16 text-white font-bold hover:bg-gray-700' onClick={() => promotePawn("knight")}>Knight</button>
+					<button className='aspect-square w-16 text-white font-bold hover:bg-gray-700' onClick={() => promotePawn("bishop")}>Bishop</button>
+					<button className='aspect-square w-16 text-white font-bold hover:bg-gray-700' onClick={() => promotePawn("queen")}>Queen</button>
+
+				</div>
+			}
 		</div>
 	  );
 }
