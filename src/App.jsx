@@ -61,10 +61,10 @@ function App() {
 			if (attemptedMove.length > 0) {
 				// castling
 				if (attemptedMove[0].type == "castle") {
-					const direction = (attemptedMove[0].x < heldPiece.x) ? -1 : 1
+					const direction = (attemptedMove[0].x < heldPiece.position.x) ? -1 : 1
 					const rook = {piece: "rook", color: heldPiece.color, position: {x: (direction < 0) ? 0 : 7, y: attemptedMove[0].y}}
-					commitMove(rook, {x: heldPiece.x + direction, y: rook.y}, board, false)
-					commitMove(heldPiece, {x: heldPiece.x + direction * 2, y: heldPiece.y}, board, false)
+					commitMove(rook, {x: heldPiece.position.x + direction, y: rook.position.y}, board, false)
+					commitMove(heldPiece, {x: heldPiece.position.x + direction * 2, y: heldPiece.position.y}, board, false)
 				} else 
 					commitMove(heldPiece, {x, y}, board, false)
 			} 
@@ -122,9 +122,9 @@ function App() {
 	const commitMove = (selectedPiece, position, gameBoard, simulated) => {
 		const { x: oldX, y: oldY} = selectedPiece.position
 		const { x: newX, y: newY } = position
-		console.log(selectedPiece)
+		const newPiece = {piece: selectedPiece.piece, color: selectedPiece.color, moves: (selectedPiece.moves || 0) + 1}
 		gameBoard[oldY][oldX] = {}
-		gameBoard[newY][newX] = {piece: selectedPiece.piece, color: selectedPiece.color, moves: (selectedPiece.moves || 0) + 1}
+		gameBoard[newY][newX] = newPiece
 		if (!simulated) {
 			setBoard(gameBoard)
 			// check checkmate
