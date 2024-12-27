@@ -1,8 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { movesSearchFunctions } from './chess/utils/moves'
+import { useSocket } from './hooks/useSocket'
 import './App.css'
 
 function App() {
+
+	const socket = useSocket("http://localhost:3000/", {
+		transports: ["websocket"],
+		cors: {
+			origin: "*"
+		}
+	})
+
+	useEffect(() => {
+		if (!socket) return
+
+		socket.on("join", (event) => {
+			console.log("connected: ", event.data)
+		})
+
+	}, [socket])
 
 	const BOARD_SIZE = 8
 	const [turn, setTurn] = useState("w")
