@@ -5,7 +5,8 @@ const process = require('process')
 const http = require('http');
 const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
-const { db, auth} = require('./src/firebase.js');
+const { auth} = require('./src/firebase.js');
+const { addUserToDatabase, getFriendsFromUID} = require('./src/db.js')
 
 const app = express();
 app.use(cors());
@@ -15,17 +16,17 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 const io = new Server(server);
 
-function generateToken(uid) {
-    const payload = {uid};
-    const secret = process.env.JWT_SECRET;
-    const options = { expiresIn: '24h' };
-    return jwt.sign(payload, secret, options)
-}
-
 app.get('/', (req, res) => {
     res.send("<h1>HELLO</h1>");
 })
 
+app.get('/friends/:uid', async (req, res) => {
+    const uid = req.params.uid;
+    const friends = await getFriendsFromUID(uid);
+    
+    console.log("results", friends)
+    res.send({"data": friends})
+})
 
 app.post('/signup', (req, res) => {
     const data = req.body;
@@ -39,8 +40,8 @@ app.post('/signup', (req, res) => {
         })
         .then((userRecord) => {
             console.log('Successfully created new user:', userRecord.uid);
-            const token = generateToken(userRecord.uid)
-            res.status(200).send({"message": "kuk", "token": token})
+            addUserToDatabase(userRecord);
+            res.status(200).send({"message": "user created", "uid": userRecord.uid})
         })
         .catch((error) => {
             console.log('Error creating new user:', error);
@@ -50,6 +51,7 @@ app.post('/signup', (req, res) => {
     }
     res.status(400).send({"message": "Invalid form data!"})
 }) 
+
 
 io.on('connection', (socket) => {
     console.log("Client connected:", socket.id)

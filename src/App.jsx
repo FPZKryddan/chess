@@ -6,7 +6,9 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Chess from './routes/chess.jsx'
 import Home from './routes/Home.jsx'
 import Navbar from './components/Navbar.jsx'
+import Header from './components/Header.jsx'
 import Auth from './routes/Auth.jsx'
+import Profile from './routes/Profile.jsx'
 import { useAuth } from './contexts/AuthProvider.jsx'
 
 function App() {
@@ -35,6 +37,7 @@ function App() {
 
 	return (
 		<Router>
+			{/* <Header></Header> */}
 			<Navbar></Navbar>
 			<div className="flex justify-center align-middle w-screen h-screen bg-primary-grey">
 				<Routes>
@@ -42,8 +45,14 @@ function App() {
 					<Route path='/auth' element={
 						currentUser ? <Navigate to="/" /> : <Auth />
 					}></Route>
+					<Route path='/profile' element={
+						currentUser ? <Profile /> : <Navigate to="/auth" />
+					}></Route>
 					<Route path='/chess' element={
 						currentUser ? <Chess /> : <Navigate to="/auth" />
+					}></Route>
+					<Route path='*' element={
+						<h1>ERROR 404: PAGE NOT FOUND</h1>
 					}></Route>
 				</Routes>
 			</div>

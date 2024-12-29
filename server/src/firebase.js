@@ -9,7 +9,7 @@ const app = initializeApp({
     credential: cert(serviceAccount)
 });
 
-const db = getFirestore();
-const auth = getAuth();
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 module.exports = {db, auth}
