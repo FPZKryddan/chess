@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer components {
-    .auth-input {
-        @apply w-full p-1 text-neutral-black bg-neutral-white rounded-lg font-semibold;
-    }
+  .auth-input {
+    @apply w-full p-1 text-neutral-black bg-neutral-white rounded-lg font-semibold;
+  }
 }

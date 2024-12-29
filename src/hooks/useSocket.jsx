@@ -3,22 +3,22 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
 export function useSocket(url, options) {
-    const [socket, setSocket] = useState(null);
+  const [socket, setSocket] = useState(null);
 
-    useEffect(() => {
-        const newSocket = io(url, options);
-        setSocket(newSocket);
+  useEffect(() => {
+    const newSocket = io(url, options);
+    setSocket(newSocket);
 
-        return () => {
-            newSocket.disconnect();
-        }
-    }, [])
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
 
-    if (import.meta && import.meta.hot) {
-        import.meta.hot.dispose(() => {
-          socket?.disconnect();
-        });
-    }
+  if (import.meta && import.meta.hot) {
+    import.meta.hot.dispose(() => {
+      socket?.disconnect();
+    });
+  }
 
-    return socket;
+  return socket;
 }
