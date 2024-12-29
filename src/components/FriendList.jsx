@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthProvider";
-import { TailSpin } from "react-loader-spinner";
+import LoadingSpinner from "./LoadingSpinner";
 
 const FriendList = () => {
   const authData = useAuth();
@@ -30,18 +30,7 @@ const FriendList = () => {
   return (
     <>
       {isLoading ? (
-        <div className="mx-auto">
-          <TailSpin
-            visible={true}
-            height={100}
-            width={100}
-            color="#4fa94d"
-            ariaLabel="loading"
-            radius={1}
-            wrapperStyle={{}}
-            wrapperClass=""
-          />
-        </div>
+        <LoadingSpinner />
       ) : (
         <div className="w-1/2 h-full bg-accent-blue mx-auto">
           {friendsData ? (
@@ -71,5 +60,6 @@ const FriendList = () => {
     </>
   );
 };
+
 
 export default FriendList;

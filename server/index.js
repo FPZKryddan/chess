@@ -6,7 +6,7 @@ const http = require("http");
 const jwt = require("jsonwebtoken");
 const { Server } = require("socket.io");
 const { auth } = require("./src/firebase.js");
-const { addUserToDatabase, getFriendsFromUID } = require("./src/db.js");
+const { addUserToDatabase, getFriendsFromUID, getUserByUID } = require("./src/db.js");
 
 const app = express();
 app.use(cors());
@@ -27,6 +27,13 @@ app.get("/friends/:uid", async (req, res) => {
   console.log("results", friends);
   res.send({ data: friends });
 });
+
+app.get("/user/:uid", async (req, res) => {
+  const uid = req.params.uid;
+  const user = await getUserByUID(uid);
+  console.log("results", user)
+  res.send({ data: user })
+})
 
 app.post("/signup", (req, res) => {
   const data = req.body;

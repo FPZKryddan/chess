@@ -44,7 +44,15 @@ const getFriendsFromUID = async (uid) => {
   return results;
 };
 
+const getUserByUID = async (uid) => {
+  const userRef = db.collection("users").doc(uid);
+  const document = await userRef.get();
+  if (!document.exists) return null;
+  return document.data();
+}
+
 module.exports = {
   addUserToDatabase: addUserToDatabase,
   getFriendsFromUID: getFriendsFromUID,
+  getUserByUID: getUserByUID
 };
