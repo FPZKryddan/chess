@@ -43,20 +43,18 @@ export default function Navbar() {
     },
   ];
 
-  console.log(navItems);
-
   return (
     <div
       className="group flex flex-col absolute left-0 top-0 w-16 pt-12 hover:w-48 h-full 
             bg-primary-dark items-start duration-200 divide-y-[1px] text-text-white"
     >
-      <div className="flex flex-row px-3 py-4 space-x-3 items-center">
+      <div className="flex flex-row px-3 py-4 space-x-3 items-center h-20">
         <img
           className="size-10 mt-2 rounded-full"
           src="profile.png"
           alt="Profile"
         />
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="hidden group-hover:inline-block h-full overflow-hidden whitespace-nowrap transition-all duration-200">
           <h1 className="font-bold text-lg">user test</h1>
           <p className="text-sm">jabba</p>
         </div>
@@ -82,7 +80,7 @@ export default function Navbar() {
           <div className="ml-2">
             <HiMiniArrowRightOnRectangle className="size-6" />
           </div>
-          <span className="hidden group-hover:inline-block text-sm w-full">
+          <span className="hidden group-hover:inline-block overflow-hidden whitespace-nowrap text-sm w-full">
             Log out
           </span>
         </div>

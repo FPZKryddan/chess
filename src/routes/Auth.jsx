@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/firebase";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function Auth({}) {
   const [email, setEmail] = useState("");
@@ -59,7 +60,7 @@ export default function Auth({}) {
 
   return (
     <div className="w-1/4 bg-secondary-brownish rounded-lg drop-shadow-2xl flex flex-col h-fit">
-      {loading ? <h1>LOADING</h1> : <h1></h1>}
+      {loading ? <LoadingSpinner /> : <h1></h1>}
       {loggingIn ? (
         <div>
           <h1 className="text-text-white w-full text-center text-3xl font-bold">

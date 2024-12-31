@@ -1,3 +1,6 @@
+import { movesSearchFunctions } from "./utils/moves";
+
+
 const initBoard = [
   [
     { piece: "rook", color: "b" },
@@ -37,8 +40,8 @@ const initBoard = [
     { piece: "rook", color: "w" },
     { piece: "knight", color: "w" },
     { piece: "bishop", color: "w" },
-    { piece: "queen", color: "w" },
     { piece: "king", color: "w" },
+    { piece: "queen", color: "w" },
     { piece: "bishop", color: "w" },
     { piece: "knight", color: "w" },
     { piece: "rook", color: "w" },
@@ -63,7 +66,7 @@ export const restructureBoard = (flatBoard) => {
   return board;
 }
 
-const getPossibleMoves = (piece, position, gameBoard) => {
+export const getPossibleMoves = (piece, position, gameBoard) => {
   const { x, y } = position;
   const moveSearchFunction = movesSearchFunctions[piece.piece];
   let moves = moveSearchFunction({ x: x, y: y }, gameBoard);
@@ -72,7 +75,7 @@ const getPossibleMoves = (piece, position, gameBoard) => {
   return moves;
 };
 
-const validateMoves = (selectedPiece, moves) => {
+export const validateMoves = (selectedPiece, moves, board) => {
   let validatedMoves = [];
   moves.forEach((move) => {
     // castling
@@ -90,8 +93,8 @@ const validateMoves = (selectedPiece, moves) => {
         type: move.type,
       };
 
-      if (!isValidMove(selectedPiece, step1)) return;
-      if (!isValidMove(selectedPiece, step2)) return;
+      if (!isValidMove(selectedPiece, step1, board)) return;
+      if (!isValidMove(selectedPiece, step2, board)) return;
 
       // add valid moves from step2 -> rook
       for (let x = step2.x; x >= 0 && x <= 7; x += direction) {
@@ -99,65 +102,87 @@ const validateMoves = (selectedPiece, moves) => {
           { x: x, y: step2.y, type: move.type },
         ]);
       }
-    } else if (isValidMove(selectedPiece, move)) {
+    } else if (isValidMove(selectedPiece, move, board)) {
       validatedMoves = validatedMoves.concat([move]);
     }
   });
   return validatedMoves;
 };
 
-const isValidMove = (selectedPiece, move) => {
+const isValidMove = (selectedPiece, move, board) => {
   // invalid if own king gets checked
   // create temp board and simulate move made
   const tempBoard = structuredClone(board);
   commitMove(selectedPiece, move, tempBoard, true);
-  if (isCheck(turn, tempBoard)) return false;
+  if (isCheck(selectedPiece.piece.color, tempBoard)) return false;
   return true;
 };
 
-const commitMove = (selectedPiece, move, gameBoard, simulated) => {
+export const commitMove = (selectedPiece, move, gameBoard, simulated) => {
   const { x: oldX, y: oldY } = selectedPiece.position;
-  const { x: newX, y: newY } = move;
+  let { x: newX, y: newY } = move;
+
   const newPiece = {
-    piece: selectedPiece.piece,
-    color: selectedPiece.color,
+    piece: selectedPiece.piece.piece,
+    color: selectedPiece.piece.color,
     moves: (selectedPiece.moves || 0) + 1,
   };
 
+  console.log(move);
+  // if castle
+  // if move.x < 4 then direction to move king = -1 : 1
+  // if kingDir == -1 then rook == x:0, y:newY else rook == x:7, y:newY
+  // rooks new position is x:2 else x:4
+  if (move.type == "castle") {
+    const kingDir = move.x < 4 ? -1 : 1;
+    const oldRookX = kingDir == -1 ? 0 : 7
+    const newRookX = kingDir == -1 ? 3 : 5
+    newX = oldX + kingDir * 2;
+    gameBoard[oldY][oldRookX] = {}
+    gameBoard[newY][newRookX] = {
+      piece: "rook",
+      color: selectedPiece.piece.color,
+      moves: 1
+    }
+  }
+
+
+
   // if enpassant attack
-  if (move.type == "enpassant")
-    gameBoard[enpassantPiece.y][enpassantPiece.x] = {};
+  // if (move.type == "enpassant")
+  //   gameBoard[enpassantPiece.y][enpassantPiece.x] = {};
 
   gameBoard[oldY][oldX] = {};
   gameBoard[newY][newX] = newPiece;
+  if (move.type == "castle")
+    console.log(gameBoard)
   if (!simulated) {
     // en passant move
-    if (selectedPiece.piece == "pawn" && Math.abs(newY - oldY) == 2) {
-      gameBoard[newY][newX] = { ...newPiece, enpassant: true };
+    // if (selectedPiece.piece == "pawn" && Math.abs(newY - oldY) == 2) {
+    //   gameBoard[newY][newX] = { ...newPiece, enpassant: true };
 
       // remove old enpassant piece if exists on board
-      if (enpassantPiece) {
-        const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x];
-        gameBoard[enpassantPiece.y][enpassantPiece.x] = {
-          piece: oldEnpassantPiece.piece,
-          color: oldEnpassantPiece.color,
-          moves: oldEnpassantPiece.moves,
-        };
-      }
+    //   if (enpassantPiece) {
+    //     const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x];
+    //     gameBoard[enpassantPiece.y][enpassantPiece.x] = {
+    //       piece: oldEnpassantPiece.piece,
+    //       color: oldEnpassantPiece.color,
+    //       moves: oldEnpassantPiece.moves,
+    //     };
+    //   }
 
-      setEnpassantPiece({ x: newX, y: newY });
-    } else if (enpassantPiece) {
-      const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x];
-      if (Object.keys(oldEnpassantPiece) > 0)
-        gameBoard[enpassantPiece.y][enpassantPiece.x] = {
-          piece: oldEnpassantPiece.piece,
-          color: oldEnpassantPiece.color,
-          moves: oldEnpassantPiece.moves,
-        };
-      setEnpassantPiece(null);
-    }
-
-    setBoard(gameBoard);
+    //   setEnpassantPiece({ x: newX, y: newY });
+    // } else if (enpassantPiece) {
+    //   const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x];
+    //   if (Object.keys(oldEnpassantPiece) > 0)
+    //     gameBoard[enpassantPiece.y][enpassantPiece.x] = {
+    //       piece: oldEnpassantPiece.piece,
+    //       color: oldEnpassantPiece.color,
+    //       moves: oldEnpassantPiece.moves,
+    //     };
+    //   setEnpassantPiece(null);
+    // }
+    return gameBoard;
 
     // check checkmate
     if (isCheckmate(turn == "w" ? "b" : "w", gameBoard)) {
@@ -165,10 +190,10 @@ const commitMove = (selectedPiece, move, gameBoard, simulated) => {
     }
 
     // promotion
-    if (selectedPiece.piece == "pawn" && (newY == 7 || newY == 0)) {
-      setPromotionState({ x: newX, y: newY });
-      return; // don't end turn until promotion state is off
-    }
+    // if (selectedPiece.piece == "pawn" && (newY == 7 || newY == 0)) {
+    //   setPromotionState({ x: newX, y: newY });
+    //   return; // don't end turn until promotion state is off
+    // }
 
     // end turn
     endTurn();

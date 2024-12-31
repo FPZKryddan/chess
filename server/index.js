@@ -6,7 +6,12 @@ const http = require("http");
 const jwt = require("jsonwebtoken");
 const { Server } = require("socket.io");
 const { auth } = require("./src/firebase.js");
-const { addUserToDatabase, getFriendsFromUID, getUserByUID } = require("./src/db.js");
+const { addUserToDatabase, getFriendsFromUID, getUserByUID, 
+  createChallengeRequest, acceptChallengeRequest, 
+  denyChallengeRequest, createGameInstanceFromChallenge,
+  getGameInstance, 
+  updateGameInstance, getUsersActiveGames} = require("./src/db.js");
+const {restructureBoard} = require('./src/chess/chess.js');
 
 const app = express();
 app.use(cors());
@@ -16,9 +21,30 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 const io = new Server(server);
 
+let activeClients = []
+
+function findSidFromUid(uid) {
+  console.log("hej")
+  console.log(activeClients)
+  const values = Object.values(activeClients)
+  
+  for (var sid in activeClients) {
+    if (activeClients[sid] == uid)
+      return sid
+  }
+  return -1;
+}
+
 app.get("/", (req, res) => {
   res.send("<h1>HELLO</h1>");
 });
+
+app.get("/games/:uid", async (req, res) => {
+  const uid = req.params.uid;
+  const games = await getUsersActiveGames(uid);
+  console.log("results", games);
+  res.send({data: games});
+})
 
 app.get("/friends/:uid", async (req, res) => {
   const uid = req.params.uid;
@@ -60,11 +86,75 @@ app.post("/signup", (req, res) => {
   res.status(400).send({ message: "Invalid form data!" });
 });
 
+
 io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
-  socket.emit("join", { message: "welcome!" });
+  const uid = socket.handshake.auth.uid
+  const sid = socket.id
+  console.log("Client connected, sid:", socket.id, "uid:", uid);
+  socket.emit("join", { message: "Created connection between " + sid + " and " + uid });
+
+  activeClients[sid] = uid
+  console.log(activeClients)
+  
+  socket.on("challenge:send", async (data) => {
+    const challengerUid = activeClients[socket.id];
+    const challengedUid = data.challenged;
+    const challengedSid = findSidFromUid(challengedUid);
+    if (challengedSid == -1) {
+      console.log("challenged not online!");
+      return;
+    }
+
+    const challenger = await getUserByUID(challengerUid);
+    
+    const challengeRequestId = await createChallengeRequest(challengerUid, challengedUid);
+    const responseData = {
+      challenger: challenger,
+      challengeId: challengeRequestId
+    }
+    io.to(challengedSid).emit("challenge:request", responseData)
+  })
+
+  socket.on("challenge:accept", async (challengeId) => {
+    const challenge = await acceptChallengeRequest(challengeId);
+    const game = await createGameInstanceFromChallenge(challengeId);
+    
+    const player1 = findSidFromUid(challenge.challenger);
+    const player2 = findSidFromUid(challenge.challenged);
+
+    io.to(player1).emit("game:created", game);
+    io.to(player2).emit("game:created", game);
+  })
+
+  socket.on("challenge:deny", async (challengeId) => {
+    await denyChallengeRequest(challengeId);
+    console.log(challengeId);
+    //TODO: notify challenger of denial
+  })
+
+  socket.on("game:loaded", async (gameId) => {
+    const gameData = await getGameInstance(gameId);
+    gameData.board = restructureBoard(gameData.board);
+    socket.emit("game:update", gameData);
+  })
+
+  socket.on("game:endTurn", async (gameId, board) => {
+    const gameData = await getGameInstance(gameId);
+    gameData.turn += 1;
+    gameData.player_turn = gameData.player_turn == "w" ? "b" : "w";
+    gameData.board = board.flat();
+
+    await updateGameInstance(gameId, gameData);
+    gameData.board = board;
+
+    io.to(findSidFromUid(gameData.w)).emit("game:update", gameData);
+    io.to(findSidFromUid(gameData.b)).emit("game:update", gameData);
+  })
+
   socket.on("disconnect", () => {
-    console.log("a user disconnected");
+    delete activeClients[socket.id]
+    console.log(activeClients)
+    console.log(socket.id, "has disconnected");
   });
 });
 

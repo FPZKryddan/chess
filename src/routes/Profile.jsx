@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthProvider";
-import { TailSpin } from "react-loader-spinner";
 import FriendList from "../components/FriendList";
 import ProfileHeader from "../components/ProfileHeader";
+import { useParams } from "react-router-dom";
 
 const Profile = () => {
+  const {uid: paramUid} = useParams();
   const authData = useAuth();
   const [body, setBody] = useState("Match History");
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    const uid = authData.currentUser.uid
+    const uid = paramUid || authData.currentUser?.uid
     if (!uid) return
 
     const url = "http://localhost:3000/user/" + uid
@@ -23,9 +24,10 @@ const Profile = () => {
     fetch(url, options)
     .then((response) => response.json())
     .then((user) => {
+      user.data["uid"] = uid;
       setUserData(user.data)
     }) 
-  })
+  }, [paramUid])
 
   return (
     <div className="flex flex-col w-full h-full">
@@ -43,7 +45,7 @@ const Profile = () => {
       <div>
         {body == "Match History"
         ? <div className="flex flex-col bg-accent-green w-full h-full"></div>
-        : <FriendList />
+        : <FriendList userData={userData}/>
         }
       </div>
     </div>

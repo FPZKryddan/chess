@@ -7,3 +7,12 @@
     @apply w-full p-1 text-neutral-black bg-neutral-white rounded-lg font-semibold;
   }
 }
+
+@keyframes progressbarShrink {
+  from {
+      width: 100%;
+  }
+  to {
+      width: 0%;
+  }
+}

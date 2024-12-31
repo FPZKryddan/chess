@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthProvider";
 import LoadingSpinner from "./LoadingSpinner";
 
-const FriendList = () => {
-  const authData = useAuth();
+const FriendList = ({userData}) => {
   const [friendsData, setFriendsData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const uid = authData.currentUser.uid;
+    const uid = userData.uid
     if (!uid) return;
 
     const url = "http://localhost:3000/friends/" + uid;

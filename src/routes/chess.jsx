@@ -1,65 +1,118 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useAuth } from "../contexts/AuthProvider";
+import { useSocket } from "../hooks/useSocket";
+import { useParams } from "react-router-dom";
+import { useSocketContext } from "../contexts/SocketProvider";
+import LoadingSpinner from "../components/LoadingSpinner";
+import { validateMoves, commitMove, getPossibleMoves } from "../chess/chess";
 
 export default function chess() {
+  const {id: gameId} = useParams();
+  const {currentUser} = useAuth();
+  const socket = useSocketContext();
+
+  const [board, setBoard] = useState([]);
+  const [canPlay, setCanPlay] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [playerColor, setPlayerColor] = useState(""); 
+
+  useEffect(() => {
+    if (!currentUser) return;
+    if (!socket) return;
+    if (!gameId) return;
+    // get game state
+    socket.emit("game:loaded", gameId);
+
+    setLoading(true);
+    
+    socket.on("game:update", (event) => {
+      console.log("UPDATED")
+      setBoard(event.board);
+      const team = event.w == currentUser.uid ? "w" : "b";
+      setCanPlay(event.player_turn == team);
+      setLoading(false);
+      setPlayerColor(team);
+      console.log(event);
+    })
+
+    return () => {
+      socket.off("game:update");
+    }
+
+  }, [currentUser, socket, gameId])
+
   const BOARD_SIZE = 8;
   const [turn, setTurn] = useState("w");
 
-  const [board, setBoard] = useState([
-    [
-      { piece: "rook", color: "b" },
-      { piece: "knight", color: "b" },
-      { piece: "bishop", color: "b" },
-      { piece: "queen", color: "b" },
-      { piece: "king", color: "b" },
-      { piece: "bishop", color: "b" },
-      { piece: "knight", color: "b" },
-      { piece: "rook", color: "b" },
-    ],
-    [
-      { piece: "pawn", color: "b" },
-      { piece: "pawn", color: "b" },
-      { piece: "pawn", color: "b" },
-      { piece: "pawn", color: "b" },
-      { piece: "pawn", color: "b" },
-      { piece: "pawn", color: "b" },
-      { piece: "pawn", color: "b" },
-      { piece: "pawn", color: "b" },
-    ],
-    [{}, {}, {}, {}, { piece: "pawn", color: "b" }, {}, {}, {}],
-    [{}, {}, {}, { piece: "pawn", color: "w" }, {}, {}, {}, {}],
-    [{}, {}, {}, {}, {}, {}, {}, {}],
-    [{}, {}, {}, {}, {}, {}, {}, {}],
-    [
-      { piece: "pawn", color: "w" },
-      { piece: "pawn", color: "w" },
-      { piece: "pawn", color: "w" },
-      { piece: "pawn", color: "w" },
-      { piece: "pawn", color: "w" },
-      { piece: "pawn", color: "w" },
-      { piece: "pawn", color: "w" },
-      { piece: "pawn", color: "w" },
-    ],
-    [
-      { piece: "rook", color: "w" },
-      {},
-      {},
-      { piece: "king", color: "w" },
-      { piece: "queen", color: "w" },
-      { piece: "bishop", color: "w" },
-      { piece: "knight", color: "w" },
-      { piece: "rook", color: "w" },
-    ],
-  ]);
   const [validMoves, setValidMoves] = useState([]);
   const [heldPiece, setHeldPiece] = useState({});
   const [promotionState, setPromotionState] = useState(null);
-  const [enpassantPiece, setEnpassantPiece] = useState(null);
 
   const boardRefs = useRef(
     Array.from({ length: BOARD_SIZE }, () =>
       Array.from({ length: BOARD_SIZE }, () => React.createRef()),
     ),
   );
+
+  const handleClickSquare = (piece, x, y) => {
+    if (!canPlay) return;
+    if ("piece" in heldPiece) {
+      // if holding a piece attempt to drop it 
+      if (attemptDrop(piece, x, y) == -1) {
+        // if drop failed
+        // attempt pickup
+        attemptPickUp(piece, x, y);
+      }
+
+    } else {
+      attemptPickUp(piece, x, y)
+    }
+  }
+
+  const attemptDrop = (piece, x, y) => {
+
+    // if x and y exists in valid moves
+    for (let move of validMoves) {
+      if (move.x == x && move.y == y){
+        // commit move
+        const newBoard = commitMove(heldPiece, move, board, false);
+        if (socket)
+          socket.emit("game:endTurn", gameId, newBoard);
+        setBoard(newBoard);
+        setHeldPiece({});
+        return;
+      }
+    }
+
+    return -1;
+  }
+
+  const attemptPickUp = (piece, x, y) => {
+
+    // check if piece
+    if (Object.keys(piece).length <= 0) {
+      setHeldPiece({});
+      return;
+    };
+    // check if correct team
+    if (piece.color != playerColor) return;
+
+      const heldPiece = {piece: piece, position: {x: x, y: y}};
+    setHeldPiece(heldPiece);
+  }
+
+  useEffect(() => {
+    if (!("piece" in heldPiece)) {
+      setValidMoves([]);
+      return;
+    }
+
+    // get moves held piece can do and display them
+    const possibleMoves = getPossibleMoves(heldPiece.piece, heldPiece.position, board);
+    const validatedMoves = validateMoves(heldPiece, possibleMoves, board);
+    console.log(validatedMoves)
+    setValidMoves(validatedMoves);
+  }, [heldPiece])
 
   const initMove = (piece, x, y) => {
     // if not holding a piece, pick it up
@@ -128,6 +181,11 @@ export default function chess() {
   return (
     <>
       <div className="grid grid-cols-8 grid-rows-8 w-1/3 aspect-square m-auto bg-green-500">
+        {loading &&
+          <div className="col-span-8 row-span-8 bg-neutral-white opacity-50">
+            <LoadingSpinner />
+          </div>
+        }
         {board.map((row, y) =>
           row.map((piece, x) => (
             <div
@@ -135,10 +193,10 @@ export default function chess() {
               ref={boardRefs.current[x][y]}
               className={`flex relative justify-center items-center ${(x + y) % 2 == 0 ? "bg-[#769656]" : "bg-[#eeeed2]"}
                             hover:brightness-150 hover:cursor-pointer`}
-              onClick={() => initMove(piece, x, y)}
+              onClick={() => handleClickSquare(piece, x, y)}
             >
               <h1
-                className={`${piece.color == "w" ? "text-white" : "text-black"} font-bold`}
+                className={`${piece.color == "w" ? "text-text-white" : "text-neutral-black"} font-bold`}
               >
                 {piece.piece}
               </h1>
@@ -152,19 +210,19 @@ export default function chess() {
                       move.y === y &&
                       (move.type === "attack" || move.type === "enpassant"),
                   )
-                    ? "bg-red-400 opacity-70"
+                    ? "bg-secondary-redish opacity-70"
                     : "") +
                   (validMoves.some(
                     (move) =>
                       move.x === x && move.y === y && move.type === "move",
                   )
-                    ? "bg-blue-400 opacity-70"
+                    ? "bg-accent-blue opacity-70"
                     : "") +
                   (validMoves.some(
                     (move) =>
                       move.x === x && move.y === y && move.type === "castle",
                   )
-                    ? "bg-green-400 opacity-70"
+                    ? "bg-accent-green opacity-70"
                     : "")
                 }
               ></div>
