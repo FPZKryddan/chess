@@ -1,4 +1,4 @@
-import { crawl, testMove } from "../utils/moves";
+import { crawl, testMove } from "../utils/moves.js";
 
 export function getPossibleMovesKing(position, board) {
   const { x, y } = position;

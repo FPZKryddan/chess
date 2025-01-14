@@ -1,4 +1,4 @@
-import { crawl } from "../utils/moves";
+import { crawl } from "../utils/moves.js";
 
 export function getPossibleMovesRook(position, board) {
   const { x, y } = position;

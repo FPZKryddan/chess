@@ -16,3 +16,13 @@
       width: 0%;
   }
 }
+
+@font-face {
+  font-family: "MERIFONT";
+  src: url("/fonts/MERIFONT.TTF") format("truetype");
+}
+
+@font-face {
+  font-family: "CASEFONT";
+  src: url("/fonts/CASEFONT.TTF") format("truetype");
+}

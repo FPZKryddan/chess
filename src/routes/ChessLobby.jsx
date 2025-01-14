@@ -39,7 +39,7 @@ export const ChessLobby = () => {
 
     return (
         <>
-            <div className="w-1/2 p-5 h-full">
+            <div className="w-1/2 p-5 h-full mx-auto">
                 <h1 className="text-3xl font-semibold">Your active games</h1>
                 <div className="grid grid-cols-3 gap-2">
                     {loading 

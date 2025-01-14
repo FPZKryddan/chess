@@ -1,4 +1,4 @@
-import { testMove } from "../utils/moves";
+import { testMove } from "../utils/moves.js";
 
 export function getPossibleMovesKnight(position, board) {
   const { x, y } = position;

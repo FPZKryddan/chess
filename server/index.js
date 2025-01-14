@@ -11,7 +11,7 @@ const { addUserToDatabase, getFriendsFromUID, getUserByUID,
   denyChallengeRequest, createGameInstanceFromChallenge,
   getGameInstance, 
   updateGameInstance, getUsersActiveGames} = require("./src/db.js");
-const {restructureBoard} = require('./src/chess/chess.js');
+const {restructureBoard, isCheckmate} = require('./src/chess/chess.js');
 
 const app = express();
 app.use(cors());
@@ -135,6 +135,13 @@ io.on("connection", (socket) => {
   socket.on("game:loaded", async (gameId) => {
     const gameData = await getGameInstance(gameId);
     gameData.board = restructureBoard(gameData.board);
+
+
+    const w = await getUserByUID(gameData.w);
+    gameData.w = {uid: gameData.w, displayName: w.displayName}
+    const b = await getUserByUID(gameData.b);
+    gameData.b = {uid: gameData.b, displayName: b.displayName}
+
     socket.emit("game:update", gameData);
   })
 
@@ -145,10 +152,26 @@ io.on("connection", (socket) => {
     gameData.board = board.flat();
 
     await updateGameInstance(gameId, gameData);
-    gameData.board = board;
 
-    io.to(findSidFromUid(gameData.w)).emit("game:update", gameData);
-    io.to(findSidFromUid(gameData.b)).emit("game:update", gameData);
+    // check for checkmate
+    let winner = ""
+    if (isCheckmate("w", board)) winner = "w"
+    else if (isCheckmate("b", board)) winner = "b"
+    
+    // send back update
+    gameData.board = board;
+    
+    const w = await getUserByUID(gameData.w);
+    gameData.w = {uid: gameData.w, displayName: w.displayName}
+    const b = await getUserByUID(gameData.b);
+    gameData.b = {uid: gameData.b, displayName: b.displayName}
+    
+    io.to(findSidFromUid(gameData.w.uid)).emit("game:update", gameData);
+    io.to(findSidFromUid(gameData.b.uid)).emit("game:update", gameData);
+    if (winner != "") {
+      io.to(findSidFromUid(gameData.w.uid)).emit("game:end", winner);
+      io.to(findSidFromUid(gameData.b.uid)).emit("game:end", winner);
+    }
   })
 
   socket.on("disconnect", () => {

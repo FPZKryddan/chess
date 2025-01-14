@@ -1,4 +1,4 @@
-import { getPiece, testMove } from "../utils/moves";
+import { getPiece, testMove } from "../utils/moves.js";
 
 export function getPossibleMovesPawn(position, board) {
   const { x, y } = position;

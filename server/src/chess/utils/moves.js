@@ -1,9 +1,9 @@
-import { getPossibleMovesRook } from "../pieces/Rook";
-import { getPossibleMovesPawn } from "../pieces/Pawn";
-import { getPossibleMovesKnight } from "../pieces/Knight";
-import { getPossibleMovesBishop } from "../pieces/Bishop";
-import { getPossibleMovesQueen } from "../pieces/Queen";
-import { getPossibleMovesKing } from "../pieces/King";
+import { getPossibleMovesRook } from "../pieces/Rook.js";
+import { getPossibleMovesPawn } from "../pieces/Pawn.js";
+import { getPossibleMovesKnight } from "../pieces/Knight.js";
+import { getPossibleMovesBishop } from "../pieces/Bishop.js";
+import { getPossibleMovesQueen } from "../pieces/Queen.js";
+import { getPossibleMovesKing } from "../pieces/King.js";
 
 export const movesSearchFunctions = {
   rook: getPossibleMovesRook,

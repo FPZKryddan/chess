@@ -1,3 +1,5 @@
+import { movesSearchFunctions } from "./utils/moves.js";
+
 const initBoard = [
   [
     { piece: "rook", color: "b" },
@@ -215,13 +217,13 @@ const isCheck = (team, gameBoard) => {
   return false;
 };
 
-const isCheckmate = (team, gameBoard) => {
+export const isCheckmate = (team, gameBoard) => {
   // check if check is blockable
   // loop through all of checked teams pieces and
   if (!isCheck(team, gameBoard)) return false;
 
-  for (let y = 0; y < BOARD_SIZE; y++) {
-    for (let x = 0; x < BOARD_SIZE; x++) {
+  for (let y = 0; y < 8; y++) {
+    for (let x = 0; x < 8; x++) {
       const piece = gameBoard[y][x];
       if (Object.keys(piece).length === 0 || piece.color !== team) continue;
 

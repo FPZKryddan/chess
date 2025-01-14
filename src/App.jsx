@@ -70,32 +70,34 @@ function App() {
   return (
     <SocketProvider socket={socket}>
       {/* <Header></Header> */}
-      <Navbar></Navbar>
-      <div className="flex justify-center align-middle w-screen h-screen bg-primary-grey">
-        <Routes>
-          <Route path="/" Component={Home}></Route>
-          <Route
-            path="/auth"
-            element={authData.currentUser ? <Navigate to="/" /> : <Auth />}
-            ></Route>
-          <Route
-            path="/profile"
-            element={authData.currentUser ? <Profile /> : <Navigate to="/auth" />}
-            ></Route>
-          <Route
-            path="/profile/:uid"
-            element={<Profile />}
-            ></Route>
-          <Route
-            path="/chess"
-            element={authData.currentUser ? <ChessLobby /> : <Navigate to="/auth" />}
-          ></Route>
-          <Route
-            path="/chess/:id"
-            element={authData.currentUser ? <Chess /> : <Navigate to="/auth" />}
-          ></Route>
-          <Route path="*" element={<h1>ERROR 404: PAGE NOT FOUND</h1>}></Route>
-        </Routes>
+      <div className="flex flex-row w-screen h-screen">
+        <Navbar></Navbar>
+        <div className="flex flex-col justify-center align-middle w-full h-screen bg-primary-grey">
+          <Routes>
+            <Route path="/" Component={Home}></Route>
+            <Route
+              path="/auth"
+              element={authData.currentUser ? <Navigate to="/" /> : <Auth />}
+              ></Route>
+            <Route
+              path="/profile"
+              element={authData.currentUser ? <Profile /> : <Navigate to="/auth" />}
+              ></Route>
+            <Route
+              path="/profile/:uid"
+              element={<Profile />}
+              ></Route>
+            <Route
+              path="/chess"
+              element={authData.currentUser ? <ChessLobby /> : <Navigate to="/auth" />}
+              ></Route>
+            <Route
+              path="/chess/:id"
+              element={authData.currentUser ? <Chess /> : <Navigate to="/auth" />}
+              ></Route>
+            <Route path="*" element={<h1>ERROR 404: PAGE NOT FOUND</h1>}></Route>
+          </Routes>
+        </div>
       </div>
     </SocketProvider>
   );

@@ -124,7 +124,8 @@ const createGameInstanceFromChallenge = async (challengeId) => {
       w: white,
       b: black,
       player_turn: "w",
-      turn: 0
+      turn: 0,
+      status: "active"
     }
 
     const gameInstancesRef = db.collection("game_instances");
