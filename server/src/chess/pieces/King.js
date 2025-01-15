@@ -37,6 +37,8 @@ function getPossibleMovesKing(position, board) {
 
   let castles = [castleLeft, castleRight];
   castles = castles.filter((moves) => moves != null);
+  castles = castles.filter((moves) => moves.type == "castle");
+
 
   possibleMoves = [...possibleMoves, ...castles];
 
@@ -45,4 +47,4 @@ function getPossibleMovesKing(position, board) {
   return possibleMoves;
 }
 
-module.exports = getPossibleMovesKing;
+module.exports = { getPossibleMovesKing };

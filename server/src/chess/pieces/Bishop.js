@@ -15,4 +15,4 @@ function getPossibleMovesBishop(position, board) {
   return possibleMoves;
 }
 
-module.exports = getPossibleMovesBishop;
+module.exports = { getPossibleMovesBishop };

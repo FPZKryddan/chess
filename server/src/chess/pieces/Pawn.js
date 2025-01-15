@@ -57,4 +57,4 @@ function getPossibleMovesPawn(position, board) {
   return possibleMoves;
 }
 
-module.exports = getPossibleMovesPawn;
+module.exports = { getPossibleMovesPawn };

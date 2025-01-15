@@ -22,4 +22,4 @@ function getPossibleMovesKnight(position, board) {
   return possibleMoves;
 }
 
-module.exports = getPossibleMovesKnight;
+module.exports = { getPossibleMovesKnight };

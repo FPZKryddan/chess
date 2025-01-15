@@ -1,4 +1,4 @@
-const {crawl} = require("../utils/moves");
+const { crawl } = require("../utils/moves");
 
 function getPossibleMovesRook(position, board) {
   const { x, y } = position;
@@ -15,4 +15,4 @@ function getPossibleMovesRook(position, board) {
   return possibleMoves;
 }
 
-module.exports = getPossibleMovesRook;
+module.exports = { getPossibleMovesRook };
