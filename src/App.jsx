@@ -48,7 +48,7 @@ function App() {
     })
 
     socket.on("friend:reqRecieved", (event) => {
-      const fromName = event.fromName
+      const fromName = event.from
       const reqId = event.reqId
       createRequestToast(fromName + " wants to become your friend!", acceptFriend, denyFriend, reqId)
     })

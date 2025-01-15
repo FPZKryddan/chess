@@ -23,22 +23,24 @@ const getFriendsFromUID = async (uid) => {
   const getUser2 = await friendsRef.where("user2", "==", uid).get();
 
   const friends = [];
-  getUser1.forEach((doc) => friends.push(doc.data()));
-  getUser2.forEach((doc) => friends.push(doc.data()));
+  getUser1.forEach((doc) => friends.push(doc));
+  getUser2.forEach((doc) => friends.push(doc));
 
   const results = await Promise.all(
-    friends.map(async (friendsObj) => {
+    friends.map(async (friendDocument) => {
+      const friendsObj = friendDocument.data()
       const friendUid =
         friendsObj.user1 === uid ? friendsObj.user2 : friendsObj.user1;
       const status = friendsObj.status;
 
-      const friendDoc = await usersRef.doc(friendUid).get();
-      const friendData = friendDoc.data();
+      await usersRef.doc(friendUid).get();
+      const friendData = friendDocument.data();
 
       return {
         name: friendData.displayName,
         uid: friendUid,
         status: status,
+        docId: friendDocument.id
       };
     }),
   );
