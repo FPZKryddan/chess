@@ -53,6 +53,25 @@ const getUserByUID = async (uid) => {
   return document.data();
 }
 
+const getMatchHistoryByUID = async (uid) => {
+  const gamesRef = db.collection("game_instances");
+  const games = await gamesRef.where(
+    Filter.and(
+      Filter.or(
+        Filter.where('b.uid', '==', uid),
+        Filter.where('w.uid', '==', uid)
+      ),
+      Filter.where('status', '==', "complete")
+    )
+  )
+  .get();
+  const matchHistory = [];
+  games.forEach((game) => {
+    matchHistory.push(game.data())
+  })
+  return matchHistory
+}
+
 const createChallengeRequest = async (challenger, challenged) => {
   try {
     const requestsRef = db.collection("challenge_requests");
@@ -114,19 +133,31 @@ const createGameInstanceFromChallenge = async (challengeId) => {
     // randomize white and black
     let players = [challengeData.challenger, challengeData.challenged];
     players = players.sort(() => .5 - Math.random()).slice(0, 2); //shuffle method from stackoverflow: 9719434
-    const white = players[0];
-    const black = players[1];
+    const whiteUID = players[0];
+    const whitePlayer = await getUserByUID(whiteUID)
+    const blackUID = players[1];
+    const blackPlayer = await getUserByUID(blackUID)
     const board = createBoard();
     const flatBoard = board.flat()
 
     const data = {
       board: flatBoard,
-      w: white,
-      b: black,
+      w: {
+        uid: whiteUID,
+        name: whitePlayer.displayName
+      },
+      b: {
+        uid: blackUID,
+        name: blackPlayer.displayName
+      },
       player_turn: "w",
       turn: 0,
-      status: "active"
+      status: "active",
+      date_started: new Date().toDateString(),
+      last_updated: new Date().toDateString()
     }
+
+    console.log(data);
 
     const gameInstancesRef = db.collection("game_instances");
     const document = await gameInstancesRef.add(data);
@@ -174,8 +205,8 @@ const getUsersActiveGames = async (uid) => {
     const gamesRef = db.collection("game_instances");
     const games = await gamesRef.where(
       Filter.or(
-        Filter.where('b', '==', uid),
-        Filter.where('w', '==', uid)
+        Filter.where('b.uid', '==', uid),
+        Filter.where('w.uid', '==', uid)
       )
     )
     .get();
@@ -203,10 +234,46 @@ const getUsersActiveGames = async (uid) => {
   }
 }
 
+const createFriendRequest = async (from, to) => {
+  try {
+    const friendsRef = db.collection("friends");
+    const data = {
+      user1: from,
+      user2: to,
+      status: "pending",
+    }
+    const document = await friendsRef.add(data);
+    return document.id;
+  } catch (error) {
+    console.error("Error creating friend request", error);
+  }
+}
+
+const acceptFriendRequest = async (reqId) => {
+  try {
+    const requestRef = db.collection("friends").doc(reqId);
+    const response = await requestRef.update({status: "accepted"});
+    return response
+  } catch (error) {
+    console.error("Error accepting friend request", error);
+  }
+}
+
+const denyFriendRequest = async (reqId) => {
+  try {
+    const requestRef = db.collection("friends").doc(reqId);
+    const response = await requestRef.update({status: "denied"});
+    return response
+  } catch (error) {
+    console.error("Error denying friend request", error);
+  }
+}
+
 module.exports = {
   addUserToDatabase: addUserToDatabase,
   getFriendsFromUID: getFriendsFromUID,
   getUserByUID: getUserByUID,
+  getMatchHistoryByUID: getMatchHistoryByUID,
   createChallengeRequest: createChallengeRequest,
   acceptChallengeRequest: acceptChallengeRequest,
   denyChallengeRequest: denyChallengeRequest,
@@ -215,4 +282,7 @@ module.exports = {
   updateGameInstance: updateGameInstance,
   setWinnerGameInstance: setWinnerGameInstance,
   getUsersActiveGames: getUsersActiveGames,
+  createFriendRequest: createFriendRequest,
+  acceptFriendRequest: acceptFriendRequest,
+  denyFriendRequest: denyFriendRequest
 };

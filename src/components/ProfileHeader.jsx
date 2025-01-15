@@ -1,14 +1,13 @@
+/* eslint-disable react/prop-types */
 import { HiMiniUsers, HiMiniFlag } from "react-icons/hi2";
 import LoadingSpinner from "./LoadingSpinner";
 import { useAuth } from "../contexts/AuthProvider";
 import { useSocketContext } from "../contexts/SocketProvider";
-import { useToast } from "../contexts/ToastProvider";
 
 
 const ProfileHeader = ({userData}) => {
   const authData = useAuth();
   const socket = useSocketContext();
-  const {createToast} = useToast();
 
 
   const handleChallenge = () => {
@@ -22,6 +21,12 @@ const ProfileHeader = ({userData}) => {
 
   const handleAddFriend = () => {
     // createToast("Request", "yay", 30000, test)
+    if (!socket) return
+    const toUid = userData.uid
+    const data = {
+      to: toUid
+    }
+    socket.emit("friend:request", data)
   }
 
 

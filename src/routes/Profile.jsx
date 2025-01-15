@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthProvider";
 import FriendList from "../components/FriendList";
+import MatchHistory from "../components/MatchHistory";
 import ProfileHeader from "../components/ProfileHeader";
 import { useParams } from "react-router-dom";
 
@@ -44,8 +45,8 @@ const Profile = () => {
       </div>
       <div>
         {body == "Match History"
-        ? <div className="flex flex-col bg-accent-green w-full h-full"></div>
-        : <FriendList userData={userData}/>
+        ? <MatchHistory uid={paramUid || authData.currentUser?.uid}/>
+        : <FriendList uid={paramUid || authData.currentUser?.uid}/>
         }
       </div>
     </div>

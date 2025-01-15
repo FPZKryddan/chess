@@ -6,12 +6,13 @@ const http = require("http");
 const jwt = require("jsonwebtoken");
 const { Server } = require("socket.io");
 const { auth } = require("./src/firebase.js");
-const { addUserToDatabase, getFriendsFromUID, getUserByUID, 
+const { addUserToDatabase, getFriendsFromUID, getUserByUID, getMatchHistoryByUID, 
   createChallengeRequest, acceptChallengeRequest, 
   denyChallengeRequest, createGameInstanceFromChallenge,
   getGameInstance, 
   updateGameInstance, getUsersActiveGames,
-  setWinnerGameInstance} = require("./src/db.js");
+  setWinnerGameInstance, createFriendRequest,
+  acceptFriendRequest, denyFriendRequest} = require("./src/db.js");
 const {restructureBoard, isCheckmate} = require('./src/chess/chess.js');
 
 const app = express();
@@ -25,10 +26,6 @@ const io = new Server(server);
 let activeClients = []
 
 function findSidFromUid(uid) {
-  console.log("hej")
-  console.log(activeClients)
-  const values = Object.values(activeClients)
-  
   for (var sid in activeClients) {
     if (activeClients[sid] == uid)
       return sid
@@ -37,14 +34,14 @@ function findSidFromUid(uid) {
 }
 
 app.get("/", (req, res) => {
-  res.send("<h1>HELLO</h1>");
+  res.status(200).send("<h1>HELLO</h1>");
 });
 
 app.get("/games/:uid", async (req, res) => {
   const uid = req.params.uid;
   const games = await getUsersActiveGames(uid);
   console.log("results", games);
-  res.send({data: games});
+  res.status(200).send({data: games});
 })
 
 app.get("/friends/:uid", async (req, res) => {
@@ -52,14 +49,20 @@ app.get("/friends/:uid", async (req, res) => {
   const friends = await getFriendsFromUID(uid);
 
   console.log("results", friends);
-  res.send({ data: friends });
+  res.status(200).send({ data: friends });
 });
 
 app.get("/user/:uid", async (req, res) => {
   const uid = req.params.uid;
   const user = await getUserByUID(uid);
   console.log("results", user)
-  res.send({ data: user })
+  res.status(200).send({ data: user })
+})
+
+app.get("/user/history/:uid", async (req, res) => {
+  const uid = req.params.uid;
+  const matchHistory = await getMatchHistoryByUID(uid);
+  res.status(200).send({ matchHistory: matchHistory})
 })
 
 app.post("/signup", (req, res) => {
@@ -97,6 +100,35 @@ io.on("connection", (socket) => {
   activeClients[sid] = uid
   console.log(activeClients)
   
+  socket.on("friend:request", async (data) => {
+    const fromUid = activeClients[socket.id];
+    const toUid = data.to;
+
+    const friendRequestId = await createFriendRequest(fromUid, toUid);
+    if (friendRequestId == -1) return -1;
+
+    // if reciever of request is online send toast
+    const toSid = findSidFromUid(toUid);
+    if (toSid != -1) {
+      const fromUser = await getUserByUID(fromUid);
+      io.to(toSid).emit("friend:reqRecieved", {reqId: friendRequestId, from: fromUser.displayName});
+    }
+    
+    console.log("friend request created with id: " + friendRequestId)
+  })
+
+  socket.on("friend:accept", async (reqId) => {
+    const documentId = await acceptFriendRequest(reqId);
+    if (!documentId) return;
+    console.log("accepted friend request id: " + documentId);
+  })
+
+  socket.on("friend:deny", async (reqId) => {
+    const documentId = await denyFriendRequest(reqId);
+    if (!documentId) return;
+    console.log("denied friend request id: " + documentId);
+  })
+
   socket.on("challenge:send", async (data) => {
     const challengerUid = activeClients[socket.id];
     const challengedUid = data.challenged;
@@ -135,22 +167,19 @@ io.on("connection", (socket) => {
 
   socket.on("game:loaded", async (gameId) => {
     const gameData = await getGameInstance(gameId);
+    if (!gameData) return -1;
     gameData.board = restructureBoard(gameData.board);
-
-
-    const w = await getUserByUID(gameData.w);
-    gameData.w = {uid: gameData.w, displayName: w.displayName}
-    const b = await getUserByUID(gameData.b);
-    gameData.b = {uid: gameData.b, displayName: b.displayName}
 
     socket.emit("game:update", gameData);
   })
 
   socket.on("game:endTurn", async (gameId, board) => {
     const gameData = await getGameInstance(gameId);
+    if (!gameData) return -1;
     gameData.turn += 1;
     gameData.player_turn = gameData.player_turn == "w" ? "b" : "w";
     gameData.board = board.flat();
+    gameData.last_updated = new Date().toDateString();
 
     await updateGameInstance(gameId, gameData);
 
@@ -162,12 +191,7 @@ io.on("connection", (socket) => {
     
     // send back update
     gameData.board = board;
-    
-    const w = await getUserByUID(gameData.w);
-    gameData.w = {uid: gameData.w, displayName: w.displayName}
-    const b = await getUserByUID(gameData.b);
-    gameData.b = {uid: gameData.b, displayName: b.displayName}
-    
+  
     io.to(findSidFromUid(gameData.w.uid)).emit("game:update", gameData);
     io.to(findSidFromUid(gameData.b.uid)).emit("game:update", gameData);
     if (winner != "") {

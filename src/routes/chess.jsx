@@ -35,8 +35,8 @@ export default function Chess() {
       setCanPlay(event.player_turn == team);
       setLoading(false);
 
-      const w = {uid: event.w.uid, displayName: event.w.displayName, color: "w"}
-      const b = {uid: event.b.uid, displayName: event.b.displayName, color: "b"}
+      const w = {uid: event.w.uid, displayName: event.w.name, color: "w"}
+      const b = {uid: event.b.uid, displayName: event.b.name, color: "b"}
 
       setPlayer(team == "w" ? w : b);
       setOpponent(team == "w" ? b : w);

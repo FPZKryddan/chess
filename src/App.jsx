@@ -24,7 +24,7 @@ import { ChessLobby } from "./routes/ChessLobby.jsx";
 function App() {
   const authData = useAuth();
   const navigate = useNavigate();
-  const {createToast, createChallengeToast} = useToast();
+  const {createToast, createRequestToast} = useToast();
 
   const socket = useSocket("http://localhost:3000/", {
     transports: ["websocket"],
@@ -44,7 +44,13 @@ function App() {
       const challengeId = event.challengeId
       const challenger = event.challenger
       console.log("Challenge request recieved:", event)
-      createChallengeToast(challenger.displayName + " has challenged you to a game!", acceptChallenge, denyChallenge, challengeId);
+      createRequestToast(challenger.displayName + " has challenged you to a game!", acceptChallenge, denyChallenge, challengeId);
+    })
+
+    socket.on("friend:reqRecieved", (event) => {
+      const fromName = event.fromName
+      const reqId = event.reqId
+      createRequestToast(fromName + " wants to become your friend!", acceptFriend, denyFriend, reqId)
     })
 
     socket.on("game:created", (event) => {
@@ -65,6 +71,14 @@ function App() {
 
   const denyChallenge = (challengeId) => {
     socket.emit("challenge:deny", challengeId);
+  }
+
+  const acceptFriend = (requestId) => {
+    socket.emit("friend:accept", requestId);
+  }
+
+  const denyFriend = (requestId) => {
+    socket.emit("friend:deny", requestId);
   }
 
   return (

@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, {createContext, useContext, useEffect, useState } from "react";
 import { HiX } from "react-icons/hi";
 
@@ -6,7 +7,7 @@ const ToastContext = createContext();
 export const ToastProvider = ({children}) => {
     const [toastList, setToastList] = useState([]);
 
-    const createToast = (type, message, duration, acceptCallback=null, denyCallback=null) => {
+    const createToast = (type, message, duration) => {
         const toast = {
             id: Math.random(),
             type: type,
@@ -30,7 +31,7 @@ export const ToastProvider = ({children}) => {
         }, toast.duration)
     }
 
-    const createChallengeToast = (message, acceptCallback, denyCallback, challengeId) => {
+    const createRequestToast = (message, acceptCallback, denyCallback, requestId) => {
         const toast = {
             id: Math.random(),
             type: "Request",
@@ -40,7 +41,7 @@ export const ToastProvider = ({children}) => {
             duration: 30000,
             acceptCallback: acceptCallback,
             denyCallback: denyCallback,
-            challengeId: challengeId
+            requestId: requestId
         }
         setToastList((prev) => [...prev, toast])
 
@@ -72,16 +73,16 @@ export const ToastProvider = ({children}) => {
 
     const handleAccept = (toast) => {
         handleClose(toast.id)
-        toast.acceptCallback(toast.challengeId)
+        toast.acceptCallback(toast.requestId)
     }
 
     const handleDeny = (toast) => {
         handleClose(toast.id)
-        toast.denyCallback(toast.challengeId)
+        toast.denyCallback(toast.requestId)
     }
 
     return (
-        <ToastContext.Provider value={{ createToast, createChallengeToast }}>
+        <ToastContext.Provider value={{ createToast, createRequestToast }}>
             {children}
             <ul className="fixed flex flex-col top-10 right-10 w-60 h-fit gap-5">
                 {toastList.map((toast, index) => (

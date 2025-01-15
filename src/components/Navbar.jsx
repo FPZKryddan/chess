@@ -53,13 +53,14 @@ export default function Navbar() {
             bg-primary-dark items-start duration-200 divide-y-[1px] text-text-white"
     >
       {currentUser ? (
-        <div className="flex flex-row px-3 py-4 space-x-3 items-center h-20">
+        <div className="flex flex-row px-3 py-4 space-x-3 items-center h-20 cursor-pointer"
+          onClick={() => navigate("/profile")}>
           <img
           className="size-10 mt-2 rounded-full"
           src="profile.png"
           alt="Profile"
           />
-          <div className="hidden group-hover:inline-block h-full overflow-hidden whitespace-nowrap transition-all duration-200 cursor-pointer"
+          <div className="hidden group-hover:inline-block h-full overflow-hidden whitespace-nowrap transition-all duration-200"
           onClick={() => navigate("/profile")}>
             <h1 className="font-bold text-lg">{currentUser.displayName}</h1>
             <p className="text-sm underline">profile</p>

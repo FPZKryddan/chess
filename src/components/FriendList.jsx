@@ -1,13 +1,12 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
-import { useAuth } from "../contexts/AuthProvider";
 import LoadingSpinner from "./LoadingSpinner";
 
-const FriendList = ({userData}) => {
+const FriendList = ({uid}) => {
   const [friendsData, setFriendsData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const uid = userData.uid
     if (!uid) return;
 
     const url = "http://localhost:3000/friends/" + uid;
@@ -24,7 +23,7 @@ const FriendList = ({userData}) => {
         setFriendsData(data.data);
         setIsLoading(false);
       });
-  }, []);
+  }, [uid]);
 
   return (
     <>
@@ -52,7 +51,7 @@ const FriendList = ({userData}) => {
               ))}
             </ul>
           ) : (
-            <h1 className="text-center">You haven't added any friends yet!</h1>
+            <h1 className="text-center">You havent added any friends yet!</h1>
           )}
         </div>
       )}
