@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { movesSearchFunctions } from "../server/src/chess/utils/moves";
+import { movesSearchFunctions } from "../src/chess/utils/moves";
 import { useSocket } from "./hooks/useSocket";
 import "./App.css";
 import {

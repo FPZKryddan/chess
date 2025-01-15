@@ -1,6 +1,6 @@
-import { crawl, testMove } from "../utils/moves.js";
+const {crawl, testMove} = require("../utils/moves");
 
-export function getPossibleMovesKing(position, board) {
+function getPossibleMovesKing(position, board) {
   const { x, y } = position;
   const self = board[y][x];
   const team = self.color;
@@ -44,3 +44,5 @@ export function getPossibleMovesKing(position, board) {
 
   return possibleMoves;
 }
+
+module.exports = getPossibleMovesKing;

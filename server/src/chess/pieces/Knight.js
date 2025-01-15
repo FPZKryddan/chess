@@ -1,6 +1,6 @@
-import { testMove } from "../utils/moves.js";
+const {testMove} = require("../utils/moves");
 
-export function getPossibleMovesKnight(position, board) {
+function getPossibleMovesKnight(position, board) {
   const { x, y } = position;
   const self = board[y][x];
   const team = self.color;
@@ -21,3 +21,5 @@ export function getPossibleMovesKnight(position, board) {
   //console.log(possbileMoves)
   return possibleMoves;
 }
+
+module.exports = getPossibleMovesKnight;

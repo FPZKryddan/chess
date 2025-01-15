@@ -1,20 +1,4 @@
-import { getPossibleMovesRook } from "../pieces/Rook.js";
-import { getPossibleMovesPawn } from "../pieces/Pawn.js";
-import { getPossibleMovesKnight } from "../pieces/Knight.js";
-import { getPossibleMovesBishop } from "../pieces/Bishop.js";
-import { getPossibleMovesQueen } from "../pieces/Queen.js";
-import { getPossibleMovesKing } from "../pieces/King.js";
-
-export const movesSearchFunctions = {
-  rook: getPossibleMovesRook,
-  pawn: getPossibleMovesPawn,
-  knight: getPossibleMovesKnight,
-  bishop: getPossibleMovesBishop,
-  queen: getPossibleMovesQueen,
-  king: getPossibleMovesKing,
-};
-
-export const crawl = (direction, position, team, board, moves) => {
+const crawl = (direction, position, team, board, moves) => {
   const x = position.x + direction.x;
   const y = position.y + direction.y;
 
@@ -36,7 +20,7 @@ export const crawl = (direction, position, team, board, moves) => {
   return crawl(direction, { x, y }, team, board, moves);
 };
 
-export const testMove = (position, board, team) => {
+const testMove = (position, board, team) => {
   const x = position.x;
   const y = position.y;
 
@@ -54,11 +38,17 @@ export const testMove = (position, board, team) => {
   return [{ x, y, type: "move" }];
 };
 
-export const getPiece = (position, board) => {
+const getPiece = (position, board) => {
   const { x, y } = position;
   if (x < 0 || x > 7) return null;
   if (y < 0 || y > 7) return null;
 
   if (Object.keys(board[y][x]).length > 0) return board[y][x];
   return null;
+};
+
+module.exports = { 
+  crawl, 
+  testMove, 
+  getPiece
 };

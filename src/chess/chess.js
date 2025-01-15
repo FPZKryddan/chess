@@ -185,9 +185,9 @@ export const commitMove = (selectedPiece, move, gameBoard, simulated) => {
     return gameBoard;
 
     // check checkmate
-    if (isCheckmate(turn == "w" ? "b" : "w", gameBoard)) {
-      console.log("checkmate");
-    }
+    // if (isCheckmate(turn == "w" ? "b" : "w", gameBoard)) {
+    //   console.log("checkmate");
+    // }
 
     // promotion
     // if (selectedPiece.piece == "pawn" && (newY == 7 || newY == 0)) {
@@ -196,7 +196,7 @@ export const commitMove = (selectedPiece, move, gameBoard, simulated) => {
     // }
 
     // end turn
-    endTurn();
+    // endTurn();
   }
 };
 
@@ -245,8 +245,8 @@ const isCheckmate = (team, gameBoard) => {
   // loop through all of checked teams pieces and
   if (!isCheck(team, gameBoard)) return false;
 
-  for (let y = 0; y < BOARD_SIZE; y++) {
-    for (let x = 0; x < BOARD_SIZE; x++) {
+  for (let y = 0; y < 8; y++) {
+    for (let x = 0; x < 8; x++) {
       const piece = gameBoard[y][x];
       if (Object.keys(piece).length === 0 || piece.color !== team) continue;
 
@@ -267,20 +267,20 @@ const isCheckmate = (team, gameBoard) => {
   return true;
 };
 
-const promotePawn = (promotionPiece) => {
-  if (promotionState) {
-    const tempBoard = structuredClone(board);
-    tempBoard[promotionState.y][promotionState.x] = {
-      piece: promotionPiece,
-      color: turn,
-    };
-    setBoard(tempBoard);
-    setPromotionState(null);
-    endTurn();
-  }
-};
+// const promotePawn = (promotionPiece) => {
+//   if (promotionState) {
+//     const tempBoard = structuredClone(board);
+//     tempBoard[promotionState.y][promotionState.x] = {
+//       piece: promotionPiece,
+//       color: turn,
+//     };
+//     setBoard(tempBoard);
+//     setPromotionState(null);
+//     endTurn();
+//   }
+// };
 
-const endTurn = () => {
-  if (turn == "w") setTurn("b");
-  else setTurn("w");
-};
+// const endTurn = () => {
+//   if (turn == "w") setTurn("b");
+//   else setTurn("w");
+// };

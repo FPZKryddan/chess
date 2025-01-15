@@ -1,4 +1,20 @@
-import { movesSearchFunctions } from "./utils/moves.js";
+const { getPossibleMovesRook } = require("./pieces/Rook.js");
+const { getPossibleMovesPawn } = require("./pieces/Pawn.js");
+const { getPossibleMovesKnight } = require("./pieces/Knight.js");
+const { getPossibleMovesBishop } = require("./pieces/Bishop.js");
+const { getPossibleMovesQueen } = require("./pieces/Queen.js");
+const { getPossibleMovesKing } = require("./pieces/King.js");
+
+
+const movesSearchFunctions = {
+  rook: getPossibleMovesRook,
+  pawn: getPossibleMovesPawn,
+  knight: getPossibleMovesKnight,
+  bishop: getPossibleMovesBishop,
+  queen: getPossibleMovesQueen,
+  king: getPossibleMovesKing,
+};
+
 
 const initBoard = [
   [
@@ -47,11 +63,11 @@ const initBoard = [
   ],
 ]
 
-export const createBoard = () => {
+const createBoard = () => {
   return initBoard;
 }
 
-export const restructureBoard = (flatBoard) => {
+const restructureBoard = (flatBoard) => {
   const board = [
     flatBoard.slice(0,8),
     flatBoard.slice(8,16),
@@ -108,12 +124,12 @@ const validateMoves = (selectedPiece, moves) => {
   return validatedMoves;
 };
 
-const isValidMove = (selectedPiece, move) => {
+const isValidMove = (selectedPiece, move, board) => {
   // invalid if own king gets checked
   // create temp board and simulate move made
   const tempBoard = structuredClone(board);
   commitMove(selectedPiece, move, tempBoard, true);
-  if (isCheck(turn, tempBoard)) return false;
+  if (isCheck(selectedPiece.piece.color, tempBoard)) return false;
   return true;
 };
 
@@ -126,54 +142,54 @@ const commitMove = (selectedPiece, move, gameBoard, simulated) => {
     moves: (selectedPiece.moves || 0) + 1,
   };
 
-  // if enpassant attack
-  if (move.type == "enpassant")
-    gameBoard[enpassantPiece.y][enpassantPiece.x] = {};
+  // // if enpassant attack
+  // if (move.type == "enpassant")
+  //   gameBoard[enpassantPiece.y][enpassantPiece.x] = {};
 
   gameBoard[oldY][oldX] = {};
   gameBoard[newY][newX] = newPiece;
   if (!simulated) {
-    // en passant move
-    if (selectedPiece.piece == "pawn" && Math.abs(newY - oldY) == 2) {
-      gameBoard[newY][newX] = { ...newPiece, enpassant: true };
+    // // en passant move
+    // if (selectedPiece.piece == "pawn" && Math.abs(newY - oldY) == 2) {
+    //   gameBoard[newY][newX] = { ...newPiece, enpassant: true };
 
-      // remove old enpassant piece if exists on board
-      if (enpassantPiece) {
-        const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x];
-        gameBoard[enpassantPiece.y][enpassantPiece.x] = {
-          piece: oldEnpassantPiece.piece,
-          color: oldEnpassantPiece.color,
-          moves: oldEnpassantPiece.moves,
-        };
-      }
+    //   // remove old enpassant piece if exists on board
+    //   if (enpassantPiece) {
+    //     const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x];
+    //     gameBoard[enpassantPiece.y][enpassantPiece.x] = {
+    //       piece: oldEnpassantPiece.piece,
+    //       color: oldEnpassantPiece.color,
+    //       moves: oldEnpassantPiece.moves,
+    //     };
+    //   }
 
-      setEnpassantPiece({ x: newX, y: newY });
-    } else if (enpassantPiece) {
-      const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x];
-      if (Object.keys(oldEnpassantPiece) > 0)
-        gameBoard[enpassantPiece.y][enpassantPiece.x] = {
-          piece: oldEnpassantPiece.piece,
-          color: oldEnpassantPiece.color,
-          moves: oldEnpassantPiece.moves,
-        };
-      setEnpassantPiece(null);
-    }
+    //   setEnpassantPiece({ x: newX, y: newY });
+    // } else if (enpassantPiece) {
+    //   const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x];
+    //   if (Object.keys(oldEnpassantPiece) > 0)
+    //     gameBoard[enpassantPiece.y][enpassantPiece.x] = {
+    //       piece: oldEnpassantPiece.piece,
+    //       color: oldEnpassantPiece.color,
+    //       moves: oldEnpassantPiece.moves,
+    //     };
+    //   setEnpassantPiece(null);
+    // }
 
-    setBoard(gameBoard);
+    // setBoard(gameBoard);
 
-    // check checkmate
-    if (isCheckmate(turn == "w" ? "b" : "w", gameBoard)) {
-      console.log("checkmate");
-    }
+    // // check checkmate
+    // if (isCheckmate(turn == "w" ? "b" : "w", gameBoard)) {
+    //   console.log("checkmate");
+    // }
 
-    // promotion
-    if (selectedPiece.piece == "pawn" && (newY == 7 || newY == 0)) {
-      setPromotionState({ x: newX, y: newY });
-      return; // don't end turn until promotion state is off
-    }
+    // // promotion
+    // if (selectedPiece.piece == "pawn" && (newY == 7 || newY == 0)) {
+    //   setPromotionState({ x: newX, y: newY });
+    //   return; // don't end turn until promotion state is off
+    // }
 
-    // end turn
-    endTurn();
+    // // end turn
+    // endTurn();
   }
 };
 
@@ -217,7 +233,7 @@ const isCheck = (team, gameBoard) => {
   return false;
 };
 
-export const isCheckmate = (team, gameBoard) => {
+const isCheckmate = (team, gameBoard) => {
   // check if check is blockable
   // loop through all of checked teams pieces and
   if (!isCheck(team, gameBoard)) return false;
@@ -244,20 +260,15 @@ export const isCheckmate = (team, gameBoard) => {
   return true;
 };
 
-const promotePawn = (promotionPiece) => {
-  if (promotionState) {
-    const tempBoard = structuredClone(board);
-    tempBoard[promotionState.y][promotionState.x] = {
-      piece: promotionPiece,
-      color: turn,
-    };
-    setBoard(tempBoard);
-    setPromotionState(null);
-    endTurn();
-  }
-};
 
-const endTurn = () => {
-  if (turn == "w") setTurn("b");
-  else setTurn("w");
-};
+
+module.exports = {
+  createBoard,
+  restructureBoard,
+  getPossibleMoves,
+  validateMoves,
+  commitMove,
+  getKingPosition,
+  isCheck,
+  isCheckmate
+}

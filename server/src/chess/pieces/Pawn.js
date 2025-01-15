@@ -1,6 +1,6 @@
-import { getPiece, testMove } from "../utils/moves.js";
+const {getPiece, testMove} = require("../utils/moves");
 
-export function getPossibleMovesPawn(position, board) {
+function getPossibleMovesPawn(position, board) {
   const { x, y } = position;
   const self = board[y][x];
   const team = self.color;
@@ -56,3 +56,5 @@ export function getPossibleMovesPawn(position, board) {
 
   return possibleMoves;
 }
+
+module.exports = getPossibleMovesPawn;
