@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthProvider";
-import { useSocket } from "../hooks/useSocket";
 import { useParams } from "react-router-dom";
 import { useSocketContext } from "../contexts/SocketProvider";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -8,7 +7,7 @@ import { validateMoves, commitMove, getPossibleMoves } from "../chess/chess";
 import { GamePlayerHeader } from "../components/GamePlayerHeader";
 import { GameWinner } from "../components/GameWinner";
 
-export default function chess() {
+export default function Chess() {
   const {id: gameId} = useParams();
   const {currentUser} = useAuth();
   const socket = useSocketContext();
@@ -47,12 +46,12 @@ export default function chess() {
     })
 
     socket.on("game:end", (event) => {
-      const winner = event.winner;
-      setWinner(winner);
+      setWinner(event.winner);
     })
 
     return () => {
       socket.off("game:update");
+      socket.off("game:end");
     }
 
   }, [currentUser, socket, gameId])

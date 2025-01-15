@@ -155,8 +155,9 @@ io.on("connection", (socket) => {
 
     // check for checkmate
     let winner = ""
-    if (isCheckmate("w", board)) winner = "w"
-    else if (isCheckmate("b", board)) winner = "b"
+    if (isCheckmate("w", board)) winner = "b"
+    else if (isCheckmate("b", board)) winner = "w"
+    console.log("Winner: " + winner)
     
     // send back update
     gameData.board = board;
@@ -169,8 +170,8 @@ io.on("connection", (socket) => {
     io.to(findSidFromUid(gameData.w.uid)).emit("game:update", gameData);
     io.to(findSidFromUid(gameData.b.uid)).emit("game:update", gameData);
     if (winner != "") {
-      io.to(findSidFromUid(gameData.w.uid)).emit("game:end", winner);
-      io.to(findSidFromUid(gameData.b.uid)).emit("game:end", winner);
+      io.to(findSidFromUid(gameData.w.uid)).emit("game:end", {"winner": winner});
+      io.to(findSidFromUid(gameData.b.uid)).emit("game:end", {"winner": winner});
     }
   })
 
