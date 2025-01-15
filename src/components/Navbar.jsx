@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const { currentUser } = useAuth();
+  console.log(currentUser)
   const navigate = useNavigate();
 
   const handleSignOut = () => {
@@ -58,9 +59,10 @@ export default function Navbar() {
           src="profile.png"
           alt="Profile"
           />
-          <div className="hidden group-hover/user:inline-block h-full overflow-hidden whitespace-nowrap transition-all duration-200">
-            <h1 className="font-bold text-lg">user test</h1>
-            <p className="text-sm">jabba</p>
+          <div className="hidden group-hover:inline-block h-full overflow-hidden whitespace-nowrap transition-all duration-200 cursor-pointer"
+          onClick={() => navigate("/profile")}>
+            <h1 className="font-bold text-lg">{currentUser.displayName}</h1>
+            <p className="text-sm underline">profile</p>
           </div>
         </div>
       ) :

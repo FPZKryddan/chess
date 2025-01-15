@@ -84,14 +84,14 @@ export default function Auth({}) {
             />
             <div className="flex flex-row gap-2">
               <input
-                type="text"
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="auth-input"
                 placeholder="Password"
               />
               <input
-                type="text"
+                type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="auth-input"
@@ -121,7 +121,7 @@ export default function Auth({}) {
               placeholder="Email"
             />
             <input
-              type="text"
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="auth-input"

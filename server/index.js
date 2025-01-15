@@ -10,7 +10,8 @@ const { addUserToDatabase, getFriendsFromUID, getUserByUID,
   createChallengeRequest, acceptChallengeRequest, 
   denyChallengeRequest, createGameInstanceFromChallenge,
   getGameInstance, 
-  updateGameInstance, getUsersActiveGames} = require("./src/db.js");
+  updateGameInstance, getUsersActiveGames,
+  setWinnerGameInstance} = require("./src/db.js");
 const {restructureBoard, isCheckmate} = require('./src/chess/chess.js');
 
 const app = express();
@@ -170,6 +171,7 @@ io.on("connection", (socket) => {
     io.to(findSidFromUid(gameData.w.uid)).emit("game:update", gameData);
     io.to(findSidFromUid(gameData.b.uid)).emit("game:update", gameData);
     if (winner != "") {
+      await setWinnerGameInstance(gameId, winner);
       io.to(findSidFromUid(gameData.w.uid)).emit("game:end", {"winner": winner});
       io.to(findSidFromUid(gameData.b.uid)).emit("game:end", {"winner": winner});
     }

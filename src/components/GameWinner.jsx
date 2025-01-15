@@ -1,6 +1,10 @@
 /* eslint-disable react/prop-types */
+import { useNavigate } from "react-router-dom";
+
+
 export const GameWinner = ({winner}) => {
 
+    const navigate = useNavigate();
 
     return (
         <div className="absolute flex flex-col w-1/2 rounded-md p-5
@@ -13,7 +17,7 @@ export const GameWinner = ({winner}) => {
             </div>
             <div className="flex flex-row gap-2">
                 <button className="p-2 rounded-md w-1/2 bg-accent-green">Rematch?</button>
-                <button className="p-2 rounded-md w-1/2 bg-secondary-redish">Home</button>
+                <button className="p-2 rounded-md w-1/2 bg-secondary-redish" onClick={() => navigate("/")}>Home</button>
             </div>
         </div>
     )

@@ -156,6 +156,19 @@ const updateGameInstance = async (gameID, gameData) => {
   }
 }
 
+const setWinnerGameInstance = async (gameID, winner) => {
+  try {
+    const gameRef = db.collection("game_instances").doc(gameID);
+    const document = await gameRef.get();
+    const data = document.data();
+
+    winner = winner == "w" ? data.w : data.b; 
+    await gameRef.update({status: "complete", winner: winner});
+  } catch (error) {
+    console.error("Error setting winner in game instance:", error);
+  }
+}
+
 const getUsersActiveGames = async (uid) => {
   try {
     const gamesRef = db.collection("game_instances");
@@ -166,9 +179,11 @@ const getUsersActiveGames = async (uid) => {
       )
     )
     .get();
-    const response = await Promise.all(
+    let response = await Promise.all(
       games.docs.map(async game =>  {
         const gameData = game.data();
+        if (gameData.status != "active") return {};
+
         const playerTeam = uid == gameData.w ? "w" : "b";
         const opponentUid = playerTeam == "w" ? gameData.b : gameData.w;
         const opponent = await getUserByUID(opponentUid); 
@@ -181,6 +196,7 @@ const getUsersActiveGames = async (uid) => {
         }
       })
     );
+    response = response.filter(game => Object.keys(game).length !== 0);
     return response;
   } catch (error) {
     console.error("Error retrieving games", error);
@@ -197,5 +213,6 @@ module.exports = {
   createGameInstanceFromChallenge: createGameInstanceFromChallenge,
   getGameInstance: getGameInstance,
   updateGameInstance: updateGameInstance,
-  getUsersActiveGames: getUsersActiveGames
+  setWinnerGameInstance: setWinnerGameInstance,
+  getUsersActiveGames: getUsersActiveGames,
 };
