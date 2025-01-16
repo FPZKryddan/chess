@@ -33,8 +33,8 @@ const getFriendsFromUID = async (uid) => {
         friendsObj.user1 === uid ? friendsObj.user2 : friendsObj.user1;
       const status = friendsObj.status;
 
-      await usersRef.doc(friendUid).get();
-      const friendData = friendDocument.data();
+      const friendUserDoc = await usersRef.doc(friendUid).get();
+      const friendData = friendUserDoc.data();
 
       return {
         name: friendData.displayName,
@@ -48,30 +48,62 @@ const getFriendsFromUID = async (uid) => {
   return results;
 };
 
+const getFriendStatus = async (uid1, uid2) => {
+  try {
+    const friendsRef = db.collection("friends");
+    const documents = await friendsRef.where(
+      Filter.and(
+        Filter.or(
+          Filter.where('user1', '==', uid1),
+          Filter.where('user2', '==', uid1)
+        ),
+        Filter.or(
+          Filter.where('user1', '==', uid2),
+          Filter.where('user2', '==', uid2)
+        )
+      )
+    ).get();
+    if (documents.empty) return null;
+
+    const document = documents.docs[0];
+    return document.data().status;
+  } catch (error) {
+    console.error("Error getting friend status", error);
+  }
+}
+
 const getUserByUID = async (uid) => {
-  const userRef = db.collection("users").doc(uid);
-  const document = await userRef.get();
-  if (!document.exists) return null;
-  return document.data();
+  try {
+    const userRef = db.collection("users").doc(uid);
+    const document = await userRef.get();
+    if (!document.exists) return null;
+    return document.data();
+  } catch (error) {
+    console.error("Error getting user", uid, error)
+  }
 }
 
 const getMatchHistoryByUID = async (uid) => {
-  const gamesRef = db.collection("game_instances");
-  const games = await gamesRef.where(
-    Filter.and(
-      Filter.or(
-        Filter.where('b.uid', '==', uid),
-        Filter.where('w.uid', '==', uid)
-      ),
-      Filter.where('status', '==', "complete")
+  try {
+    const gamesRef = db.collection("game_instances");
+    const games = await gamesRef.where(
+      Filter.and(
+        Filter.or(
+          Filter.where('b.uid', '==', uid),
+          Filter.where('w.uid', '==', uid)
+        ),
+        Filter.where('status', '==', "complete")
+      )
     )
-  )
-  .get();
-  const matchHistory = [];
-  games.forEach((game) => {
-    matchHistory.push(game.data())
-  })
-  return matchHistory
+      .get();
+    const matchHistory = [];
+    games.forEach((game) => {
+      matchHistory.push(game.data())
+    })
+    return matchHistory
+  } catch (error) {
+    console.error("Error getting match history for uid:", uid, "with error", error);
+  }
 }
 
 const createChallengeRequest = async (challenger, challenged) => {
@@ -96,7 +128,7 @@ const acceptChallengeRequest = async (challengeId) => {
   try {
     const requestsRef = db.collection("challenge_requests");
     const document = requestsRef.doc(challengeId);
-    const response = await document.update({status: "accepted"});
+    const response = await document.update({ status: "accepted" });
     const data = await document.get();
     console.log("accepted challenge request", response);
     return data.data();
@@ -109,7 +141,7 @@ const denyChallengeRequest = async (challengeId) => {
   try {
     const requestsRef = db.collection("challenge_requests");
     const document = requestsRef.doc(challengeId);
-    const response = await document.update({status: "rejected"});
+    const response = await document.update({ status: "rejected" });
     console.log("rejected challenge request", response);
   } catch (error) {
     console.error("Error rejecting challenge request in database:", error);
@@ -121,7 +153,7 @@ const getChallengeRequest = async (challengeId) => {
     const requestsRef = db.collection("challenge_requests").doc(challengeId);
     const document = await requestsRef.get();
     return document.data();
-  } catch(error) {
+  } catch (error) {
     console.error("Error reading document:", error)
   }
 }
@@ -195,8 +227,8 @@ const setWinnerGameInstance = async (gameID, winner) => {
     const document = await gameRef.get();
     const data = document.data();
 
-    winner = winner == "w" ? data.w : data.b; 
-    await gameRef.update({status: "complete", winner: winner});
+    winner = winner == "w" ? data.w : data.b;
+    await gameRef.update({ status: "complete", winner: winner });
   } catch (error) {
     console.error("Error setting winner in game instance:", error);
   }
@@ -211,15 +243,15 @@ const getUsersActiveGames = async (uid) => {
         Filter.where('w.uid', '==', uid)
       )
     )
-    .get();
+      .get();
     let response = await Promise.all(
-      games.docs.map(async game =>  {
+      games.docs.map(async game => {
         const gameData = game.data();
         if (gameData.status != "active") return {};
 
         const playerTeam = uid == gameData.w ? "w" : "b";
         const opponentUid = playerTeam == "w" ? gameData.b : gameData.w;
-        const opponent = await getUserByUID(opponentUid); 
+        const opponent = await getUserByUID(opponentUid);
 
         return {
           gameId: game.id,
@@ -254,7 +286,7 @@ const createFriendRequest = async (from, to) => {
 const acceptFriendRequest = async (reqId) => {
   try {
     const requestRef = db.collection("friends").doc(reqId);
-    const response = await requestRef.update({status: "accepted"});
+    const response = await requestRef.update({ status: "accepted" });
     return response
   } catch (error) {
     console.error("Error accepting friend request", error);
@@ -264,7 +296,7 @@ const acceptFriendRequest = async (reqId) => {
 const denyFriendRequest = async (reqId) => {
   try {
     const requestRef = db.collection("friends").doc(reqId);
-    const response = await requestRef.update({status: "denied"});
+    const response = await requestRef.delete();
     return response
   } catch (error) {
     console.error("Error denying friend request", error);
@@ -274,6 +306,7 @@ const denyFriendRequest = async (reqId) => {
 module.exports = {
   addUserToDatabase: addUserToDatabase,
   getFriendsFromUID: getFriendsFromUID,
+  getFriendStatus: getFriendStatus,
   getUserByUID: getUserByUID,
   getMatchHistoryByUID: getMatchHistoryByUID,
   createChallengeRequest: createChallengeRequest,

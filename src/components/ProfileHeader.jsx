@@ -5,10 +5,9 @@ import { useAuth } from "../contexts/AuthProvider";
 import { useSocketContext } from "../contexts/SocketProvider";
 
 
-const ProfileHeader = ({userData}) => {
+const ProfileHeader = ({ userData, friendStatus }) => {
   const authData = useAuth();
   const socket = useSocketContext();
-
 
   const handleChallenge = () => {
     if (!socket) return
@@ -32,10 +31,10 @@ const ProfileHeader = ({userData}) => {
 
   return (
     <div className="flex flex-col w-1/2 mx-auto justify-center max-h-96 items-center">
-      {userData 
-      ?
+      {userData
+        ?
         <div className="flex flex-col p-5 w-full items-center">
-          <div className=""> 
+          <div className="">
             <img
               className="rounded-full w-auto aspect-square h-48"
               src="profile.png"
@@ -56,16 +55,17 @@ const ProfileHeader = ({userData}) => {
             </li>
           </ul>
           <p>Member since november 6969</p>
-          {(authData) && authData.currentUser.uid != userData.uid 
-            ?<ul className="flex flex-row gap-2">
-              <li>
-                <button className="bg-accent-green p-2 rounded-md" onClick={handleAddFriend}>Add friend</button>
-              </li>
+          {(authData) && authData.currentUser.uid != userData.uid &&
+            <ul className="flex flex-row gap-2">
+              {friendStatus != "accepted" &&
+                <li>
+                  <button className="bg-accent-green p-2 rounded-md" onClick={handleAddFriend}>Add friend</button>
+                </li>
+              }
               <li>
                 <button className="bg-secondary-redish p-2 rounded-md" onClick={handleChallenge}>Challenge</button>
               </li>
             </ul>
-            : <></>
           }
         </div>
         :

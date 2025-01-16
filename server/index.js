@@ -6,7 +6,8 @@ const http = require("http");
 const jwt = require("jsonwebtoken");
 const { Server } = require("socket.io");
 const { auth } = require("./src/firebase.js");
-const { addUserToDatabase, getFriendsFromUID, getUserByUID, getMatchHistoryByUID, 
+const { addUserToDatabase, getFriendsFromUID, getFriendStatus,
+  getUserByUID, getMatchHistoryByUID, 
   createChallengeRequest, acceptChallengeRequest, 
   denyChallengeRequest, createGameInstanceFromChallenge,
   getGameInstance, 
@@ -40,7 +41,6 @@ app.get("/", (req, res) => {
 app.get("/games/:uid", async (req, res) => {
   const uid = req.params.uid;
   const games = await getUsersActiveGames(uid);
-  console.log("results", games);
   res.status(200).send({data: games});
 })
 
@@ -48,14 +48,22 @@ app.get("/friends/:uid", async (req, res) => {
   const uid = req.params.uid;
   const friends = await getFriendsFromUID(uid);
 
-  console.log("results", friends);
   res.status(200).send({ data: friends });
 });
+
+app.get("/friend/:uid1/:uid2", async (req, res) => {
+  const friendStatus = await getFriendStatus(req.params.uid1, req.params.uid2);
+
+  if (!friendStatus) {
+    res.status(200).send({status: null});
+  } else {
+    res.status(200).send({status: friendStatus});
+  }
+})
 
 app.get("/user/:uid", async (req, res) => {
   const uid = req.params.uid;
   const user = await getUserByUID(uid);
-  console.log("results", user)
   res.status(200).send({ data: user })
 })
 
@@ -98,7 +106,6 @@ io.on("connection", (socket) => {
   socket.emit("join", { message: "Created connection between " + sid + " and " + uid });
 
   activeClients[sid] = uid
-  console.log(activeClients)
   
   socket.on("friend:request", async (data) => {
     const fromUid = activeClients[socket.id];
@@ -187,7 +194,6 @@ io.on("connection", (socket) => {
     let winner = ""
     if (isCheckmate("w", board)) winner = "b"
     else if (isCheckmate("b", board)) winner = "w"
-    console.log("Winner: " + winner)
     
     // send back update
     gameData.board = board;
@@ -203,7 +209,6 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     delete activeClients[socket.id]
-    console.log(activeClients)
     console.log(socket.id, "has disconnected");
   });
 });
