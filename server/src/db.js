@@ -343,6 +343,64 @@ const denyFriendRequest = async (reqId) => {
     console.error("Error denying friend request", error);
   }
 }
+const joinQueue = async (uid) => {
+  try {
+    const queueRef = db.collection("queues").doc("standard");
+    const queueDocument = await queueRef.get();
+    const queueData = await queueDocument.data();
+    const queue = queueData.in_queue;
+
+
+    if (!queue.find((player) => player == uid)) {
+      queue.push(uid);
+      queueRef.update({in_queue: queue}).then(res => {
+        return res;
+      });
+    } else {
+      return -1;
+    }
+
+  } catch (error) {
+    console.error("Error joining queue", error);
+  }
+}
+
+const leaveQueue = async (uid) => {
+  try {
+    const queueRef = db.collection("queues").doc("standard");
+    const queueDocument = await queueRef.get();
+    const queueData = await queueDocument.data();
+    let queue = queueData.in_queue;
+    queue = queue.filter((player) => player != uid);
+    queueRef.update({in_queue: queue}).then(res => {
+      return res;
+    });
+  } catch (error) {
+    console.error("Error leaving queue", error);
+  }
+}
+
+const checkQueueStatus = async (queue, uid) => {
+  try {
+    const queueRef = db.collection("queues").doc(queue);
+    const queueDocument = await queueRef.get();
+    const queueData = await queueDocument.data();
+    const queueArray = queueData.in_queue;
+    
+    let inQueue = false;
+    if (queueArray.find((player) => player == uid)) {
+      inQueue = true;
+    }
+    const data = {
+      queue_status: inQueue,
+      queue_count: queueArray.length
+    };
+
+    return data;
+  } catch (error) {
+    console.error("Error getting queue status", error);
+  }
+}
 
 module.exports = {
   addUserToDatabase: addUserToDatabase,
@@ -361,5 +419,8 @@ module.exports = {
   getUsersActiveGames: getUsersActiveGames,
   createFriendRequest: createFriendRequest,
   acceptFriendRequest: acceptFriendRequest,
-  denyFriendRequest: denyFriendRequest
+  denyFriendRequest: denyFriendRequest,
+  joinQueue: joinQueue,
+  leaveQueue: leaveQueue,
+  checkQueueStatus: checkQueueStatus
 };

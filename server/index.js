@@ -3,7 +3,6 @@ const express = require("express");
 const cors = require("cors");
 const process = require("process");
 const http = require("http");
-const jwt = require("jsonwebtoken");
 const { Server } = require("socket.io");
 const { auth } = require("./src/firebase.js");
 const { addUserToDatabase, getFriendsFromUID, getFriendStatus,
@@ -13,9 +12,9 @@ const { addUserToDatabase, getFriendsFromUID, getFriendStatus,
   createGameInstance, getGameInstance, 
   updateGameInstance, getUsersActiveGames,
   setWinnerGameInstance, createFriendRequest,
-  acceptFriendRequest, denyFriendRequest} = require("./src/db.js");
+  acceptFriendRequest, denyFriendRequest,
+  joinQueue, leaveQueue, checkQueueStatus} = require("./src/db.js");
 const {restructureBoard, isCheckmate} = require('./src/chess/chess.js');
-
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -98,6 +97,25 @@ app.post("/signup", (req, res) => {
   res.status(400).send({ message: "Invalid form data!" });
 });
 
+app.get("/queue/:uid", async (req, res) => {
+  const response = await checkQueueStatus("standard", req.params.uid);
+  res.status(200).send(response)
+})
+
+app.post("/queue", async (req, res) => {
+  const uid = req.body.uid;
+  const queue = await joinQueue(uid);
+  if (queue == -1)
+    res.status(400).send({message: "Already in queue"})
+  else
+    res.status(200).send({message: "Joined queue"})
+})
+
+app.post("/queue/cancel", async (req, res) => {
+  const uid = req.body.uid;
+  await leaveQueue(uid);
+  res.status(200).send({message: "Left queue"})
+})
 
 io.on("connection", (socket) => {
   const uid = socket.handshake.auth.uid
