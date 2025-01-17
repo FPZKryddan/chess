@@ -104,11 +104,17 @@ app.get("/queue/:uid", async (req, res) => {
 
 app.post("/queue", async (req, res) => {
   const uid = req.body.uid;
-  const queue = await joinQueue(uid);
-  if (queue == -1)
+  const game = await joinQueue(uid);
+  console.log(game);
+  if (game == -1)
     res.status(400).send({message: "Already in queue"})
   else
-    res.status(200).send({message: "Joined queue"})
+    if (typeof(game) === 'object') {
+      console.log("FIND:" + findSidFromUid(game.player1));
+      io.to(findSidFromUid(game.player1)).emit("game:created", game.game);
+      io.to(findSidFromUid(game.player2)).emit("game:created", game.game);
+    } else
+      res.status(200).send({message: "Joined queue"})
 })
 
 app.post("/queue/cancel", async (req, res) => {
@@ -240,8 +246,9 @@ io.on("connection", (socket) => {
 
   }) 
 
-  socket.on("disconnect", () => {
-    delete activeClients[socket.id]
+  socket.on("disconnect", async () => {
+    await leaveQueue(activeClients[socket.id]);
+    delete activeClients[socket.id];
     console.log(socket.id, "has disconnected");
   });
 });

@@ -348,7 +348,7 @@ const joinQueue = async (uid) => {
     const queueRef = db.collection("queues").doc("standard");
     const queueDocument = await queueRef.get();
     const queueData = await queueDocument.data();
-    const queue = queueData.in_queue;
+    let queue = queueData.in_queue;
 
 
     if (!queue.find((player) => player == uid)) {
@@ -358,6 +358,16 @@ const joinQueue = async (uid) => {
       });
     } else {
       return -1;
+    }
+
+    // insane matchmaking 
+    if (queue.length >= 2) {
+      const [player1, player2] = queue.sort(() => 0.5 - Math.random()).slice(0, 2);
+      const game = await createGameInstance(player1, player2);
+      queue = queue.filter(player => player !== player1 && player !== player2);
+      await queueRef.update({ in_queue: queue });
+
+      return {player1: player1, player2: player2, game: game};
     }
 
   } catch (error) {
