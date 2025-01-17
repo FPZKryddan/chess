@@ -6,6 +6,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { validateMoves, commitMove, getPossibleMoves } from "../chess/chess";
 import { GamePlayerHeader } from "../components/GamePlayerHeader";
 import { GameWinner } from "../components/GameWinner";
+import GameChat from "../components/GameChat";
 
 export default function Chess() {
   const {id: gameId} = useParams();
@@ -269,9 +270,9 @@ export default function Chess() {
         </div>
       </div>
           
-      <div className="bg-primary-dark w-96 h-full">
+      <div className="w-96 self-center">
           <div className="">
-
+            <GameChat opponent={opponent.uid} gameId={gameId}/>
           </div>
       </div>
       {promotionState && (

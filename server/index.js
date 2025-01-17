@@ -13,7 +13,8 @@ const { addUserToDatabase, getFriendsFromUID, getFriendStatus,
   updateGameInstance, getUsersActiveGames,
   setWinnerGameInstance, createFriendRequest,
   acceptFriendRequest, denyFriendRequest,
-  joinQueue, leaveQueue, checkQueueStatus} = require("./src/db.js");
+  joinQueue, leaveQueue, checkQueueStatus,
+  sendMessageToGameChat, getMessagesFromGameChat} = require("./src/db.js");
 const {restructureBoard, isCheckmate} = require('./src/chess/chess.js');
 const app = express();
 app.use(cors());
@@ -201,6 +202,9 @@ io.on("connection", (socket) => {
     if (!gameData) return -1;
     gameData.board = restructureBoard(gameData.board);
 
+    const messages = await getMessagesFromGameChat(gameId);
+
+    socket.emit("gamechat:update", messages)
     socket.emit("game:update", gameData);
   })
 
@@ -245,6 +249,19 @@ io.on("connection", (socket) => {
     }
 
   }) 
+
+  socket.on("gamechat:send", async (messageData) => {
+    const message = messageData.message;
+    const senderUid = messageData.sender;
+    const recieverUid = messageData.reciever;
+    const gameId = messageData.gameId;
+
+    const messages = await sendMessageToGameChat(senderUid, message, gameId);
+
+    console.log(recieverUid);
+    io.to(findSidFromUid(senderUid)).emit("gamechat:update", messages)
+    io.to(findSidFromUid(recieverUid)).emit("gamechat:update", messages)
+  })
 
   socket.on("disconnect", async () => {
     await leaveQueue(activeClients[socket.id]);

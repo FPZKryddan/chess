@@ -175,6 +175,7 @@ const createGameInstanceFromChallenge = async (challengeId) => {
     const flatBoard = board.flat()
 
     const data = {
+      messages: [],
       board: flatBoard,
       w: {
         uid: whiteUID,
@@ -214,6 +215,7 @@ const createGameInstance = async (player1, player2) => {
     const flatBoard = board.flat()
 
     const data = {
+      messages: [],
       board: flatBoard,
       w: {
         uid: whiteUID,
@@ -412,6 +414,32 @@ const checkQueueStatus = async (queue, uid) => {
   }
 }
 
+const sendMessageToGameChat = async (sender, message, gameId) => {
+  try {
+    const gameRef = db.collection("game_instances").doc(gameId);
+    const gameDocumentRef = await gameRef.get();
+    const gameDocumentData = await gameDocumentRef.data();
+    let messages = gameDocumentData.messages;
+
+    messages.push({sender: sender, message: message});
+    const response = await gameRef.update({messages: messages});
+    return messages;
+  } catch (error) {
+    console.error("Error sending message", error);
+  }
+}
+
+const getMessagesFromGameChat = async (gameId) => {
+  try {
+    const gameRef = db.collection("game_instances").doc(gameId);
+    const gameDocumentRef = await gameRef.get();
+    const gameDocumentData = await gameDocumentRef.data();
+    return gameDocumentData.messages;
+  } catch (error) {
+    console.error("Error getting game messages", error);
+  }
+}
+
 module.exports = {
   addUserToDatabase: addUserToDatabase,
   getFriendsFromUID: getFriendsFromUID,
@@ -432,5 +460,7 @@ module.exports = {
   denyFriendRequest: denyFriendRequest,
   joinQueue: joinQueue,
   leaveQueue: leaveQueue,
-  checkQueueStatus: checkQueueStatus
+  checkQueueStatus: checkQueueStatus,
+  sendMessageToGameChat: sendMessageToGameChat,
+  getMessagesFromGameChat: getMessagesFromGameChat
 };

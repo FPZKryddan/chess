@@ -100,7 +100,7 @@ export const ChessLobby = () => {
     return (
         <>
             <div className="w-1/2 p-5 h-full mx-auto flex flex-col gap-2">
-                <p className="text-center">There are {queueCount} {queueCount > 1 ? "players" : "player"} in queue!</p>
+                <p className="text-center">There are {queueCount} {queueCount != 1 ? "players" : "player"} in queue!</p>
                 {queueStatus 
                 ?
                     <div className="text-center">
