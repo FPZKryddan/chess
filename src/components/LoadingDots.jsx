@@ -1,14 +1,14 @@
 /* eslint-disable react/prop-types */
-import { TailSpin } from "react-loader-spinner";
+import { ThreeDots } from "react-loader-spinner";
 
-const LoadingSpinner = ({size=100}) => {
+const LoadingDots = ({size=100}) => {
     return (
         <div className="w-full h-full flex justify-center items-center">
-          <TailSpin
+          <ThreeDots
             visible={true}
             height={size}
-            width={size}
-            color="#4fa94d"
+            width={size*1.8}
+            color="#FFF"
             ariaLabel="loading"
             radius={1}
             wrapperStyle={{}}
@@ -18,4 +18,4 @@ const LoadingSpinner = ({size=100}) => {
     )
 }
 
-export default LoadingSpinner;
+export default LoadingDots;

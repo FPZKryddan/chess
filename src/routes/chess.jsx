@@ -42,7 +42,9 @@ export default function Chess() {
       setOpponent(team == "w" ? b : w);
       console.log(event);
       console.log(currentUser);
-
+      
+      if (event.winner != {})
+        setWinner(event.winner);
     })
 
     socket.on("game:end", (event) => {
@@ -202,7 +204,7 @@ export default function Chess() {
       <div className="flex flex-col h-5/6 justify-evenly">
         <div className="h-5/6 aspect-square items-center relative">
           {winner &&
-            <GameWinner winner={winner}/>
+            <GameWinner winner={winner} player={player} opponent={opponent}/>
           }
           <GamePlayerHeader playerName={opponent.displayName} playerImg={"../../profile.png"} playerTurn={!canPlay} up={true}/>
           <div className={`grid grid-cols-8 grid-rows-8 bg-green-500 border-2 border-primary-dark 

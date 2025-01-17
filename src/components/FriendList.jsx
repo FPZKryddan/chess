@@ -73,7 +73,7 @@ const FriendList = ({uid}) => {
                         </>
                     )}
                     {currentUser && currentUser.uid !== uid && friend.status != "pending" && (
-                      <button>Delete</button>
+                      <button onClick={() => handleDeny(friend.docId)}>Delete</button>
                     )}
                   </li>
                 )

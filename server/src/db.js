@@ -201,6 +201,46 @@ const createGameInstanceFromChallenge = async (challengeId) => {
   }
 }
 
+const createGameInstance = async (player1, player2) => {
+  try {
+    // randomize white and black
+    let players = [player1, player2];
+    players = players.sort(() => .5 - Math.random()).slice(0, 2); //shuffle method from stackoverflow: 9719434
+    const whiteUID = players[0];
+    const whitePlayer = await getUserByUID(whiteUID)
+    const blackUID = players[1];
+    const blackPlayer = await getUserByUID(blackUID)
+    const board = createBoard();
+    const flatBoard = board.flat()
+
+    const data = {
+      board: flatBoard,
+      w: {
+        uid: whiteUID,
+        name: whitePlayer.displayName
+      },
+      b: {
+        uid: blackUID,
+        name: blackPlayer.displayName
+      },
+      player_turn: "w",
+      turn: 0,
+      status: "active",
+      date_started: new Date().toDateString(),
+      last_updated: new Date().toDateString()
+    }
+
+    console.log(data);
+
+    const gameInstancesRef = db.collection("game_instances");
+    const document = await gameInstancesRef.add(data);
+    return document.id
+  } catch (error) {
+    console.error("Error creating game instance in database:", error);
+  }
+}
+
+
 const getGameInstance = async (gameID) => {
   try {
     const gameRef = db.collection("game_instances").doc(gameID);
@@ -249,9 +289,10 @@ const getUsersActiveGames = async (uid) => {
         const gameData = game.data();
         if (gameData.status != "active") return {};
 
-        const playerTeam = uid == gameData.w ? "w" : "b";
-        const opponentUid = playerTeam == "w" ? gameData.b : gameData.w;
+        const playerTeam = uid == gameData.w.uid ? "w" : "b";
+        const opponentUid = playerTeam == "w" ? gameData.b.uid : gameData.w.uid;
         const opponent = await getUserByUID(opponentUid);
+        if (!opponent) return {};
 
         return {
           gameId: game.id,
@@ -313,6 +354,7 @@ module.exports = {
   acceptChallengeRequest: acceptChallengeRequest,
   denyChallengeRequest: denyChallengeRequest,
   createGameInstanceFromChallenge: createGameInstanceFromChallenge,
+  createGameInstance: createGameInstance,
   getGameInstance: getGameInstance,
   updateGameInstance: updateGameInstance,
   setWinnerGameInstance: setWinnerGameInstance,

@@ -10,7 +10,7 @@ const { addUserToDatabase, getFriendsFromUID, getFriendStatus,
   getUserByUID, getMatchHistoryByUID, 
   createChallengeRequest, acceptChallengeRequest, 
   denyChallengeRequest, createGameInstanceFromChallenge,
-  getGameInstance, 
+  createGameInstance, getGameInstance, 
   updateGameInstance, getUsersActiveGames,
   setWinnerGameInstance, createFriendRequest,
   acceptFriendRequest, denyFriendRequest} = require("./src/db.js");
@@ -206,6 +206,21 @@ io.on("connection", (socket) => {
       io.to(findSidFromUid(gameData.b.uid)).emit("game:end", {"winner": winner});
     }
   })
+
+  socket.on("rematch:request", async (data) => {
+    console.log(data)
+    const opponent = findSidFromUid(data.opponent);
+    const rematchConfirmed = data.confirmed;
+
+    if (rematchConfirmed) { // this is a terrible way of doing this, rematch checking should be handled on the backend not frontend
+      const game = await createGameInstance(data.player, data.opponent);
+      io.to(socket.id).emit("game:created", game);
+      io.to(opponent).emit("game:created", game);
+    } else {
+      io.to(opponent).emit("rematch:challenge", {"message": "fight me"});
+    }
+
+  }) 
 
   socket.on("disconnect", () => {
     delete activeClients[socket.id]
