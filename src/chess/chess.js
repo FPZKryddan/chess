@@ -54,14 +54,14 @@ export const createBoard = () => {
 
 export const restructureBoard = (flatBoard) => {
   const board = [
-    flatBoard.slice(0,8),
-    flatBoard.slice(8,16),
-    flatBoard.slice(16,24),
-    flatBoard.slice(24,32),
-    flatBoard.slice(32,40),
-    flatBoard.slice(40,48),
-    flatBoard.slice(48,56),
-    flatBoard.slice(56,64)
+    flatBoard.slice(0, 8),
+    flatBoard.slice(8, 16),
+    flatBoard.slice(16, 24),
+    flatBoard.slice(24, 32),
+    flatBoard.slice(32, 40),
+    flatBoard.slice(40, 48),
+    flatBoard.slice(48, 56),
+    flatBoard.slice(56, 64)
   ];
   return board;
 }
@@ -128,7 +128,6 @@ export const commitMove = (selectedPiece, move, gameBoard, simulated) => {
     moves: (selectedPiece.moves || 0) + 1,
   };
 
-  console.log(move);
   // if castle
   // if move.x < 4 then direction to move king = -1 : 1
   // if kingDir == -1 then rook == x:0, y:newY else rook == x:7, y:newY
@@ -146,22 +145,19 @@ export const commitMove = (selectedPiece, move, gameBoard, simulated) => {
     }
   }
 
-
-
   // if enpassant attack
   // if (move.type == "enpassant")
   //   gameBoard[enpassantPiece.y][enpassantPiece.x] = {};
 
   gameBoard[oldY][oldX] = {};
   gameBoard[newY][newX] = newPiece;
-  if (move.type == "castle")
-    console.log(gameBoard)
+
   if (!simulated) {
     // en passant move
     // if (selectedPiece.piece == "pawn" && Math.abs(newY - oldY) == 2) {
     //   gameBoard[newY][newX] = { ...newPiece, enpassant: true };
 
-      // remove old enpassant piece if exists on board
+    // remove old enpassant piece if exists on board
     //   if (enpassantPiece) {
     //     const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x];
     //     gameBoard[enpassantPiece.y][enpassantPiece.x] = {

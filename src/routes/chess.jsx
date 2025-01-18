@@ -59,16 +59,14 @@ export default function Chess() {
 
   }, [currentUser, socket, gameId])
 
-  const BOARD_SIZE = 8;
-  const [turn, setTurn] = useState("w");
 
   const [validMoves, setValidMoves] = useState([]);
   const [heldPiece, setHeldPiece] = useState({});
   const [promotionState, setPromotionState] = useState(null);
 
   const boardRefs = useRef(
-    Array.from({ length: BOARD_SIZE }, () =>
-      Array.from({ length: BOARD_SIZE }, () => React.createRef()),
+    Array.from({ length: 8 }, () =>
+      Array.from({ length: 8 }, () => React.createRef()),
     ),
   );
 
@@ -94,6 +92,14 @@ export default function Chess() {
       if (move.x == x && move.y == y){
         // commit move
         const newBoard = commitMove(heldPiece, move, board, false);
+      
+        // handle promotion
+        if (heldPiece.piece.piece == "pawn" && (move.y == 7 || move.y == 0)) {
+          setBoard(newBoard);
+          setPromotionState({x: x, y: y});
+          return;
+        }
+
         if (socket)
           socket.emit("game:endTurn", gameId, newBoard);
         setBoard(newBoard);
@@ -119,6 +125,20 @@ export default function Chess() {
     setHeldPiece(heldPiece);
   }
 
+  const promotePawn = (piece) => {
+    console.log(promotionState);
+    const newBoard = board;
+    newBoard[promotionState.y][promotionState.x].piece = piece;
+    console.log(newBoard[promotionState.y][promotionState.x]);
+    setPromotionState(null);
+
+    if (socket)
+      socket.emit("game:endTurn", gameId, newBoard);
+    setBoard(newBoard);
+    setHeldPiece({});
+
+  }
+
   useEffect(() => {
     if (!("piece" in heldPiece)) {
       setValidMoves([]);
@@ -132,70 +152,6 @@ export default function Chess() {
     setValidMoves(validatedMoves);
   }, [heldPiece])
 
-
-  // const initMove = (piece, x, y) => {
-  //   // if not holding a piece, pick it up
-  //   if (Object.keys(heldPiece).length == 0) {
-  //     if (Object.keys(piece).length == 0)
-  //       // if clicked a empty square return
-  //       return;
-  //     if (piece.color != turn)
-  //       // if clicked piece is wrong team return
-  //       return;
-
-  //     const selection = {};
-  //     selection.piece = piece.piece;
-  //     selection.color = piece.color;
-  //     if ("moves" in piece) selection.moves = piece.moves;
-  //     selection.position = { x, y };
-  //     setHeldPiece(selection);
-
-  //     const moves = getPossibleMoves(selection, selection.position, board);
-  //     const validatedMoves = validateMoves(selection, moves);
-  //     if (validatedMoves.length == 0) setHeldPiece({});
-  //     setValidMoves(validatedMoves);
-  //   } else {
-  //     //
-  //     // check if click cords are in validMoves positions
-  //     // Commit move
-  //     const attemptedMove = validMoves.filter(
-  //       (move) => move.x === x && move.y === y,
-  //     );
-  //     if (attemptedMove.length > 0) {
-  //       // castling
-  //       if (attemptedMove[0].type == "castle") {
-  //         const direction = attemptedMove[0].x < heldPiece.position.x ? -1 : 1;
-  //         const rook = {
-  //           piece: "rook",
-  //           color: heldPiece.color,
-  //           position: { x: direction < 0 ? 0 : 7, y: attemptedMove[0].y },
-  //         };
-  //         commitMove(
-  //           rook,
-  //           {
-  //             x: heldPiece.position.x + direction,
-  //             y: rook.position.y,
-  //             type: "castle",
-  //           },
-  //           board,
-  //           false,
-  //         );
-  //         commitMove(
-  //           heldPiece,
-  //           {
-  //             x: heldPiece.position.x + direction * 2,
-  //             y: heldPiece.position.y,
-  //             type: "castle",
-  //           },
-  //           board,
-  //           false,
-  //         );
-  //       } else commitMove(heldPiece, attemptedMove[0], board, false);
-  //     }
-  //     setHeldPiece({});
-  //     setValidMoves([]);
-  //   }
-  // };
 
   return (
     <div className="flex flex-row justify-evenly h-full">
