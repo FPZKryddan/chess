@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
+/* eslint-disable react/prop-types */
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSocketContext } from "../contexts/SocketProvider";
 import { HiMiniCheck } from "react-icons/hi2";
 import { useAuth } from "../contexts/AuthProvider";
@@ -6,9 +7,11 @@ import { useAuth } from "../contexts/AuthProvider";
 const GameChat = ({opponent, gameId}) => {
     const { currentUser } = useAuth();
     const socket = useSocketContext();
+    const inputRef = useRef(null);
 
     const [inputMessage, setInputMessage] = useState("");
     const [messages, setMessages] = useState([])
+    
 
     const handleSend = useCallback(() => {
         console.log(inputMessage);
@@ -26,16 +29,19 @@ const GameChat = ({opponent, gameId}) => {
                 handleSend();
             }
         };
-
-        document.getElementById("inputMessage").addEventListener('keyup', handleKeyUp);
-
-
+    
         socket.on("gamechat:update", (data) => {
             setMessages(data);
         })
 
+        const inputElement = inputRef.current;
+        if (inputElement)
+            inputElement.addEventListener('keyup', handleKeyUp);
+
+
         return () => {
-            document.getElementById("inputMessage").removeEventListener('keyup', handleKeyUp);
+        if (inputElement)
+            inputElement.removeEventListener('keyup', handleKeyUp);
         };
 
     }, [socket, handleSend])
@@ -65,6 +71,7 @@ const GameChat = ({opponent, gameId}) => {
                 <input 
                     type="text"
                     id="inputMessage"
+                    ref={inputRef}
                     className="p-2 bg-primary-dark w-4/5 rounded-bl-lg text-text-white" 
                     placeholder="Type message here!" 
                     value={inputMessage} 
