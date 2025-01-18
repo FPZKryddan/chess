@@ -126,10 +126,8 @@ export default function Chess() {
   }
 
   const promotePawn = (piece) => {
-    console.log(promotionState);
     const newBoard = board;
     newBoard[promotionState.y][promotionState.x].piece = piece;
-    console.log(newBoard[promotionState.y][promotionState.x]);
     setPromotionState(null);
 
     if (socket)

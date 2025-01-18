@@ -253,7 +253,7 @@ const isCheckmate = (team, gameBoard) => {
           tempBoard,
           true,
         );
-        if (!isCheck(team, gameBoard)) return false;
+        if (!isCheck(team, tempBoard)) return false;
       }
     }
   }
