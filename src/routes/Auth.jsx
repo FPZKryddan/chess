@@ -59,14 +59,13 @@ export default function Auth({}) {
   };
 
   return (
-    <div className="w-1/4 bg-secondary-brownish rounded-lg drop-shadow-2xl flex flex-col h-fit">
+    <div className="w-96 bg-secondary-brownish rounded-lg drop-shadow-2xl flex flex-col h-fit">
       {loading ? <LoadingSpinner /> : <h1></h1>}
       {loggingIn ? (
         <div>
           <h1 className="text-text-white w-full text-center text-3xl font-bold">
             Register!
           </h1>
-          <p onClick={() => setLoggingIn(!loggingIn)}>Login!</p>
           <div className="flex flex-col gap-2 w-full p-2 mx-auto">
             <input
               type="text"
@@ -99,10 +98,17 @@ export default function Auth({}) {
               />
             </div>
             <button
-              className="w-full bg-accent-blue mx-auto hover:brightness-125"
+              className="w-full p-2 rounded-md text-text-white text-lg font-bold
+              bg-accent-green mx-auto hover:brightness-125"
               onClick={submitSignup}
             >
-              SIGNUP
+              Register
+            </button>
+            <button
+              className="text-text-white text-center underline text-sm"
+              onClick={() => setLoggingIn(!loggingIn)}
+              >
+              Already have an account? Login Here!
             </button>
           </div>
         </div>
@@ -111,7 +117,6 @@ export default function Auth({}) {
           <h1 className="text-text-white w-full text-center text-3xl font-bold">
             Login!
           </h1>
-          <p onClick={() => setLoggingIn(!loggingIn)}>Signup!</p>
           <div className="flex flex-col gap-2 w-full p-2 mx-auto">
             <input
               type="text"
@@ -128,10 +133,17 @@ export default function Auth({}) {
               placeholder="Password"
             />
             <button
-              className="w-full bg-accent-green mx-auto hover:brightness-125"
+              className="w-full p-2 rounded-md text-text-white text-lg font-bold
+              bg-accent-green mx-auto hover:brightness-125"
               onClick={submitLogin}
             >
               Login
+            </button>
+            <button
+              className="text-text-white text-center underline text-sm"
+              onClick={() => setLoggingIn(!loggingIn)}
+              >
+              Don't haven an account? Register Here!
             </button>
           </div>
         </div>
