@@ -8,6 +8,8 @@ import { GamePlayerHeader } from "../components/GamePlayerHeader";
 import { GameWinner } from "../components/GameWinner";
 import GameChat from "../components/GameChat";
 
+import { HiFlag } from "react-icons/hi2";
+
 export default function Chess() {
   const { id: gameId } = useParams();
   const { currentUser } = useAuth();
@@ -281,6 +283,17 @@ export default function Chess() {
     }
   }
 
+  //#TODO
+  const handleSurrender = () => {
+    if (!socket) return;
+
+    socket.emit("game:surrender", );
+  }
+
+  //#TODO
+  const handleDraw = () => {
+
+  }
 
   return (
     <div className="flex flex-col md:flex-row items-center h-full gap-5">
@@ -380,8 +393,22 @@ export default function Chess() {
       </div>
 
       <div className="w-96 self-center">
-        <div className="">
+        <div className="flex flex-col gap-5">
           <GameChat opponent={opponent.uid} gameId={gameId} />
+          <div className="flex flex-row w-full">
+            <button 
+            className="w-1/2 rounded-l-md p-3 text-neutral-black font-bold text-md border-2
+             border-neutral-black hover:bg-accent-green"
+             onClick={() => handleSurrender()}>
+              Surrender
+            </button>
+            <button 
+            className="w-1/2 rounded-r-md p-3 text-neutral-black font-bold text-md border-2
+             border-neutral-black hover:bg-accent-green"
+             onClick={() => handleDraw()}>
+              Draw
+            </button>
+          </div>
         </div>
       </div>
       {promotionState && (
