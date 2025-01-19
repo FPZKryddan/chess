@@ -16,55 +16,53 @@ const movesSearchFunctions = {
 };
 
 
-const initBoard = [
-  [
-    { piece: "rook", color: "b" },
-    { piece: "knight", color: "b" },
-    { piece: "bishop", color: "b" },
-    { piece: "queen", color: "b" },
-    { piece: "king", color: "b" },
-    { piece: "bishop", color: "b" },
-    { piece: "knight", color: "b" },
-    { piece: "rook", color: "b" },
-  ],
-  [
-    { piece: "pawn", color: "b" },
-    { piece: "pawn", color: "b" },
-    { piece: "pawn", color: "b" },
-    { piece: "pawn", color: "b" },
-    { piece: "pawn", color: "b" },
-    { piece: "pawn", color: "b" },
-    { piece: "pawn", color: "b" },
-    { piece: "pawn", color: "b" },
-  ],
-  [{}, {}, {}, {}, {}, {}, {}, {}],
-  [{}, {}, {}, {}, {}, {}, {}, {}],
-  [{}, {}, {}, {}, {}, {}, {}, {}],
-  [{}, {}, {}, {}, {}, {}, {}, {}],
-  [
-    { piece: "pawn", color: "w" },
-    { piece: "pawn", color: "w" },
-    { piece: "pawn", color: "w" },
-    { piece: "pawn", color: "w" },
-    { piece: "pawn", color: "w" },
-    { piece: "pawn", color: "w" },
-    { piece: "pawn", color: "w" },
-    { piece: "pawn", color: "w" },
-  ],
-  [
-    { piece: "rook", color: "w" },
-    { piece: "knight", color: "w" },
-    { piece: "bishop", color: "w" },
-    { piece: "queen", color: "w" },
-    { piece: "king", color: "w" },
-    { piece: "bishop", color: "w" },
-    { piece: "knight", color: "w" },
-    { piece: "rook", color: "w" },
-  ],
-]
-
 const createBoard = () => {
-  return initBoard;
+  return [
+    [
+      { piece: "rook", color: "b" },
+      { piece: "knight", color: "b" },
+      { piece: "bishop", color: "b" },
+      { piece: "queen", color: "b" },
+      { piece: "king", color: "b" },
+      { piece: "bishop", color: "b" },
+      { piece: "knight", color: "b" },
+      { piece: "rook", color: "b" },
+    ],
+    [
+      { piece: "pawn", color: "b" },
+      { piece: "pawn", color: "b" },
+      { piece: "pawn", color: "b" },
+      { piece: "pawn", color: "b" },
+      { piece: "pawn", color: "b" },
+      { piece: "pawn", color: "b" },
+      { piece: "pawn", color: "b" },
+      { piece: "pawn", color: "b" },
+    ],
+    [{}, {}, {}, {}, {}, {}, {}, {}],
+    [{}, {}, {}, {}, {}, {}, {}, {}],
+    [{}, {}, {}, {}, {}, {}, {}, {}],
+    [{}, {}, {}, {}, {}, {}, {}, {}],
+    [
+      { piece: "pawn", color: "w" },
+      { piece: "pawn", color: "w" },
+      { piece: "pawn", color: "w" },
+      { piece: "pawn", color: "w" },
+      { piece: "pawn", color: "w" },
+      { piece: "pawn", color: "w" },
+      { piece: "pawn", color: "w" },
+      { piece: "pawn", color: "w" },
+    ],
+    [
+      { piece: "rook", color: "w" },
+      { piece: "knight", color: "w" },
+      { piece: "bishop", color: "w" },
+      { piece: "queen", color: "w" },
+      { piece: "king", color: "w" },
+      { piece: "bishop", color: "w" },
+      { piece: "knight", color: "w" },
+      { piece: "rook", color: "w" },
+    ],
+  ];
 }
 
 const restructureBoard = (flatBoard) => {

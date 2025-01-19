@@ -183,6 +183,7 @@ io.on("connection", (socket) => {
   socket.on("challenge:accept", async (challengeId) => {
     const challenge = await acceptChallengeRequest(challengeId);
     const game = await createGameInstanceFromChallenge(challengeId);
+    game.move_history = game.move_history || [];
     
     const player1 = findSidFromUid(challenge.challenger);
     const player2 = findSidFromUid(challenge.challenged);
@@ -208,13 +209,17 @@ io.on("connection", (socket) => {
     socket.emit("game:update", gameData);
   })
 
-  socket.on("game:endTurn", async (gameId, board) => {
+  socket.on("game:endTurn", async (gameId, board, move) => {
     const gameData = await getGameInstance(gameId);
     if (!gameData) return -1;
+    
+    console.log(move);
+    
     gameData.turn += 1;
     gameData.player_turn = gameData.player_turn == "w" ? "b" : "w";
     gameData.board = board.flat();
     gameData.last_updated = new Date().toDateString();
+    gameData.move_history = [...gameData.move_history, move];
 
     await updateGameInstance(gameId, gameData);
 

@@ -86,7 +86,7 @@ function App() {
       {/* <Header></Header> */}
       <div className="flex flex-row w-screen h-screen">
         <Navbar></Navbar>
-        <div className="flex flex-col justify-center items-center w-full h-screen bg-primary-grey">
+        <div className="flex flex-col justify-center items-center w-full h-screen p-5 bg-primary-grey">
           <Routes>
             <Route path="/" Component={Home}></Route>
             <Route

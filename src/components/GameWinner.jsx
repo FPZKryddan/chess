@@ -43,7 +43,7 @@ export const GameWinner = ({winner, player, opponent}) => {
                 <p className="text-center">Play again? or give up!</p>
                 }
             </div>
-            <div className="flex flex-row gap-2">
+            <div className="flex flex-row gap-2 text-text-white">
                 <button 
                     className={`p-2 rounded-md w-1/2 bg-accent-green ${remathRequestPending ? "contrast-50" : "hover:contrast-125"} ${rematchRequestRecieved ? "animate-pulse" : ""}`}
                     onClick={() => handleRematch()}>{remathRequestPending ? <LoadingDots size={20}/> : "Rematch"}</button>

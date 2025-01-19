@@ -48,11 +48,11 @@ const GameChat = ({opponent, gameId}) => {
 
 
     return (
-        <div className="flex flex-col bg-primary-dark rounded-lg border-2 border-neutral-black">
+        <div className="flex flex-col h-[32rem] bg-primary-dark rounded-lg border-2 border-neutral-black">
             <div className="border-b-2 border-b-primary-grey p-2">
                 <h1 className="text-center text-text-white text-2xl">Chat</h1>
             </div>
-            <div className="h-[44rem] p-2">
+            <div className="p-2 h-full">
                 <ul className="flex flex-col gap-1 max-h-full overflow-y-auto w-full">
                     {messages.map((message, index) => (
                         <li 

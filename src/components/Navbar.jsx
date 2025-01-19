@@ -49,7 +49,7 @@ export default function Navbar() {
 
   return (
     <div
-      className="group flex flex-col w-16 pt-12 hover:w-48 h-full 
+      className="hidden md:flex group flex-col w-16 pt-12 hover:w-48 h-full 
             bg-primary-dark items-start duration-200 divide-y-[1px] text-text-white"
     >
       {currentUser ? (

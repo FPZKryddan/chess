@@ -189,7 +189,8 @@ const createGameInstanceFromChallenge = async (challengeId) => {
       turn: 0,
       status: "active",
       date_started: new Date().toDateString(),
-      last_updated: new Date().toDateString()
+      last_updated: new Date().toDateString(),
+      move_history: []
     }
 
     console.log(data);
@@ -229,7 +230,8 @@ const createGameInstance = async (player1, player2) => {
       turn: 0,
       status: "active",
       date_started: new Date().toDateString(),
-      last_updated: new Date().toDateString()
+      last_updated: new Date().toDateString(),
+      move_history: []
     }
 
     console.log(data);
@@ -422,7 +424,7 @@ const sendMessageToGameChat = async (sender, message, gameId) => {
     let messages = gameDocumentData.messages;
 
     messages.push({sender: sender, message: message});
-    const response = await gameRef.update({messages: messages});
+    await gameRef.update({messages: messages});
     return messages;
   } catch (error) {
     console.error("Error sending message", error);
