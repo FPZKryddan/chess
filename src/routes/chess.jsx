@@ -131,6 +131,12 @@ export default function Chess() {
   const attemptDrop = (piece, x, y) => {
     if (winner) return;
 
+    // drop if same piece 
+    if (heldPiece.position.x == x && heldPiece.position.y == y) {
+      setHeldPiece({});
+      return;
+    }
+
     // if x and y exists in valid moves
     for (let move of validMoves) {
       if (move.x == x && move.y == y) {
