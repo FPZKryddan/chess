@@ -216,6 +216,7 @@ export default function Chess() {
         continue
       }
 
+
       // standard case
       move = move.replace('x', '');
       let piece = move[0];
@@ -235,6 +236,24 @@ export default function Chess() {
       if (move[move.length - 1] != to_y + 1)
         piece = notationToPiece[move[move.length - 1]];
 
+      
+      // handle enpassant
+        // check if last move was enpassant move
+        // check if this move is behind enpassant
+      if (idx > 0 && piece == "pawn") {
+        console.log(1)
+        if (checkIfMoveIsEnpassantMove(idx - 1)) {
+          console.log(2)
+
+          const enpassantY = moveHistory[idx - 1][3] - 1;
+          if (from_y == enpassantY && Math.abs(to_y - enpassantY) > 0) {
+            console.log(3)
+
+            simulatedBoard[enpassantY][to_x] = {};
+          }
+        }
+      }
+
 
       simulatedBoard[from_y][from_x] = {};
       simulatedBoard[to_y][to_x] = {piece: piece, color: color};
@@ -245,6 +264,12 @@ export default function Chess() {
     if (storedLiveBoard.length == 0)
       setStoredLiveBoard(board);
     setBoard(simulatedBoard);
+  }
+
+  const checkIfMoveIsEnpassantMove = (moveIndex) => {
+    const move = moveHistory[moveIndex];
+    if (move.length != 4) return false;
+    if (Math.abs(move[1] - move[3]) == 2) return true;
   }
 
   const backToLiveGame = () => {
@@ -267,7 +292,8 @@ export default function Chess() {
           <ul>
             {moveHistory.map((move, index) => (
               <li key={index}
-                className={`flex flex-row text-text-white hover:brightness-125 bg-primary-dark ${simulatedIndex >= index ? "brightness-150" : ""}`}
+                className={`flex flex-row text-text-white hover:brightness-200 bg-primary-dark 
+                  cursor-pointer ${simulatedIndex >= index ? "brightness-150" : ""}`}
                 onClick={() => simulateBoardToMove(index)}
               >
                 <p className="w-12 border-r-2 text-center">{index + 1}</p> <p className="w-full text-center">{move}</p>

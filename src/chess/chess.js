@@ -143,54 +143,35 @@ export const commitMove = (selectedPiece, move, gameBoard, simulated) => {
     }
   }
 
-  // if enpassant attack
-  // if (move.type == "enpassant")
-  //   gameBoard[enpassantPiece.y][enpassantPiece.x] = {};
+  // handle enpassant move
+  if (newPiece.piece == "pawn" && Math.abs(newY - oldY) == 2) {
+    newPiece["enpassant"] = true;
+  }
+
+  // handle enpassant attack
+  if (move.type == "enpassant") {
+    for (let y in gameBoard) {
+      for (let x in gameBoard[y]) {
+        if ("enpassant" in gameBoard[y][x]) {
+          gameBoard[y][x] = {};
+        }
+      }
+    }
+  } else {
+    for (let y in gameBoard) {
+      for (let x in gameBoard[y]) {
+        if ("enpassant" in gameBoard[y][x]) {
+          delete gameBoard[y][x].enpassant;
+        }
+      }
+    }
+  }
 
   gameBoard[oldY][oldX] = {};
   gameBoard[newY][newX] = newPiece;
 
   if (!simulated) {
-    // en passant move
-    // if (selectedPiece.piece == "pawn" && Math.abs(newY - oldY) == 2) {
-    //   gameBoard[newY][newX] = { ...newPiece, enpassant: true };
-
-    // remove old enpassant piece if exists on board
-    //   if (enpassantPiece) {
-    //     const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x];
-    //     gameBoard[enpassantPiece.y][enpassantPiece.x] = {
-    //       piece: oldEnpassantPiece.piece,
-    //       color: oldEnpassantPiece.color,
-    //       moves: oldEnpassantPiece.moves,
-    //     };
-    //   }
-
-    //   setEnpassantPiece({ x: newX, y: newY });
-    // } else if (enpassantPiece) {
-    //   const oldEnpassantPiece = gameBoard[enpassantPiece.y][enpassantPiece.x];
-    //   if (Object.keys(oldEnpassantPiece) > 0)
-    //     gameBoard[enpassantPiece.y][enpassantPiece.x] = {
-    //       piece: oldEnpassantPiece.piece,
-    //       color: oldEnpassantPiece.color,
-    //       moves: oldEnpassantPiece.moves,
-    //     };
-    //   setEnpassantPiece(null);
-    // }
     return gameBoard;
-
-    // check checkmate
-    // if (isCheckmate(turn == "w" ? "b" : "w", gameBoard)) {
-    //   console.log("checkmate");
-    // }
-
-    // promotion
-    // if (selectedPiece.piece == "pawn" && (newY == 7 || newY == 0)) {
-    //   setPromotionState({ x: newX, y: newY });
-    //   return; // don't end turn until promotion state is off
-    // }
-
-    // end turn
-    // endTurn();
   }
 };
 
