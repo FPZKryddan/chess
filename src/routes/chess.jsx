@@ -3,12 +3,14 @@ import { useAuth } from "../contexts/AuthProvider";
 import { useParams } from "react-router-dom";
 import { useSocketContext } from "../contexts/SocketProvider";
 import LoadingSpinner from "../components/LoadingSpinner";
+import LoadingDots from "../components/LoadingDots";
 import { validateMoves, commitMove, getPossibleMoves, isCheck, createBoard } from "../chess/chess";
 import { GamePlayerHeader } from "../components/GamePlayerHeader";
 import { GameWinner } from "../components/GameWinner";
 import GameChat from "../components/GameChat";
 
 import { HiFlag } from "react-icons/hi2";
+import { GameDrawOffer } from "../components/GameDrawOffer";
 
 export default function Chess() {
   const { id: gameId } = useParams();
@@ -25,6 +27,9 @@ export default function Chess() {
 
   const [simulatedIndex, setSimulatedIndex] = useState(-1);
   const [storedLiveBoard, setStoredLiveBoard] = useState([]);
+
+  const [drawOfferShow, setDrawOfferShow] = useState(false);
+  const [drawOfferRequestSent, setdrawOfferRequestSent] = useState(false);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -60,9 +65,20 @@ export default function Chess() {
       setWinner(event.winner);
     })
 
+    socket.on("game:drawreq", (event) => {
+      console.log(gameId, event)
+      if (gameId != event) return;
+      setDrawOfferShow(true);
+    })
+
+    socket.on("game:drawdeclined", () => {
+      setdrawOfferRequestSent(false);
+    })
+
     return () => {
       socket.off("game:update");
       socket.off("game:end");
+      socket.off("game:drawreq")
     }
 
   }, [currentUser, socket, gameId])
@@ -296,7 +312,12 @@ export default function Chess() {
 
   //#TODO
   const handleDraw = () => {
+    if (!socket) return;
+    if (winner) return;
+    if (drawOfferRequestSent) return;
 
+    setdrawOfferRequestSent(true);
+    socket.emit("game:drawreq", gameId, player)
   }
 
   return (
@@ -335,6 +356,9 @@ export default function Chess() {
         <div className="items-center relative">
           {winner &&
             <GameWinner winner={winner} player={player} opponent={opponent} />
+          }
+          {drawOfferShow &&
+            <GameDrawOffer gameId={gameId} opponent={opponent} close={() => setDrawOfferShow(false)}/>
           }
           <GamePlayerHeader playerName={opponent.displayName} playerImg={"../../profile.png"} playerTurn={!canPlay} up={true} />
           <div className={`grid grid-cols-8 grid-rows-8 bg-green-500 border-2 border-primary-dark 
@@ -409,8 +433,12 @@ export default function Chess() {
             <button 
             className="w-1/2 rounded-r-md p-3 text-neutral-black font-bold text-md border-2
              border-neutral-black hover:bg-accent-green"
+             disabled={drawOfferRequestSent}
              onClick={() => handleDraw()}>
-              Draw
+              {drawOfferRequestSent 
+              ? <LoadingDots size={20}/>
+              : "Draw"
+              }
             </button>
           </div>
         </div>

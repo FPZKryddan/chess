@@ -7,7 +7,6 @@ export function getPossibleMovesPawn(position, board) {
   const direction = team == "w" ? -1 : 1;
   let possibleMoves = [...testMove({ x: x, y: y + direction }, board, team)];
 
-  console.log("WHAHAHAH", possibleMoves)
   // start pos 2 square moves if not blocked
   if (possibleMoves.length > 0 && possibleMoves[0].type != "attack") {
     if (y == 1 || y == 6) {

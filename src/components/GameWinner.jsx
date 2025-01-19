@@ -30,11 +30,12 @@ export const GameWinner = ({winner, player, opponent}) => {
         socket.emit("rematch:request", {player: player.uid, opponent: opponent.uid, confirmed: rematchRequestRecieved})
     }
 
+
     return (
         <div className="absolute flex flex-col w-1/2 rounded-md p-5
             top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-neutral-white shadow-xl">
             <div>
-                <h1 className="text-center text-2xl font-bold">{winner == "w" ? "White" : "Black"} wins!</h1>
+                <h1 className="text-center text-2xl font-bold">{winner == "t" ? "Draw" : winner == "w" ? "White wins!" : "Black wins!"}</h1>
             </div>
             <div>
                 {rematchRequestRecieved ? 

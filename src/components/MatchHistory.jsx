@@ -43,7 +43,7 @@ const MatchHistory = ({ uid }) => {
                                     >
                                         <div className="w-full flex flex-row gap-5 p-2">
                                             <h1 className="">VS {opponent.name}</h1>
-                                            <p className="">{match.winner.uid == opponent.uid ? "Defeat" : "Victory"}</p>
+                                            <p className="">{match.winner == "t" ? "Tie" : match.winner.uid == opponent.uid ? "Defeat" : "Victory"}</p>
                                         </div>
                                     </li>
                                 )

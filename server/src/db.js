@@ -271,7 +271,8 @@ const setWinnerGameInstance = async (gameID, winner) => {
     const document = await gameRef.get();
     const data = document.data();
 
-    winner = winner == "w" ? data.w : data.b;
+    if (winner != "t")
+      winner = winner == "w" ? data.w : data.b;
     await gameRef.update({ status: "complete", winner: winner });
   } catch (error) {
     console.error("Error setting winner in game instance:", error);

@@ -251,6 +251,31 @@ io.on("connection", (socket) => {
     io.to(findSidFromUid(gameData.b.uid)).emit("game:end", {"winner": winner});
   })
 
+  socket.on("game:drawreq", async (gameId, player) => {
+    const gameData = await getGameInstance(gameId);
+    if (!gameData) return -1;
+
+    const opponent = player.uid == gameData.w.uid ? gameData.b : gameData.w;
+    const opponentSid = findSidFromUid(opponent.uid);
+    io.to(opponentSid).emit("game:drawreq", gameId);
+  })
+
+  socket.on("game:drawaccept", async (gameId) => {
+    const gameData = await getGameInstance(gameId);
+    if (!gameData) return -1;
+
+    const winner = "t"
+
+    await setWinnerGameInstance(gameId, winner);
+    io.to(findSidFromUid(gameData.w.uid)).emit("game:end", {"winner": winner});
+    io.to(findSidFromUid(gameData.b.uid)).emit("game:end", {"winner": winner});
+  })
+
+  socket.on("game:drawdecline", async (opponent) => {
+    const opponentSid = findSidFromUid(opponent.uid);
+    io.to(opponentSid).emit("game:drawdeclined")
+  })
+
   socket.on("rematch:request", async (data) => {
     console.log(data)
     const opponent = findSidFromUid(data.opponent);
