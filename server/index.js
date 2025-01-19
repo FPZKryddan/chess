@@ -240,6 +240,17 @@ io.on("connection", (socket) => {
     }
   })
 
+  socket.on("game:surrender", async (player, gameId) => {
+    const gameData = await getGameInstance(gameId);
+    if (!gameData) return -1;
+
+    const winner = player.color == "w" ? "b" : "w"
+
+    await setWinnerGameInstance(gameId, winner);
+    io.to(findSidFromUid(gameData.w.uid)).emit("game:end", {"winner": winner});
+    io.to(findSidFromUid(gameData.b.uid)).emit("game:end", {"winner": winner});
+  })
+
   socket.on("rematch:request", async (data) => {
     console.log(data)
     const opponent = findSidFromUid(data.opponent);

@@ -113,6 +113,7 @@ export default function Chess() {
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
   const attemptDrop = (piece, x, y) => {
+    if (winner) return;
 
     // if x and y exists in valid moves
     for (let move of validMoves) {
@@ -153,6 +154,8 @@ export default function Chess() {
   }
 
   const attemptPickUp = (piece, x, y) => {
+    if (winner) return;
+
 
     // check if piece
     if (Object.keys(piece).length <= 0) {
@@ -286,8 +289,9 @@ export default function Chess() {
   //#TODO
   const handleSurrender = () => {
     if (!socket) return;
+    if (winner) return;
 
-    socket.emit("game:surrender", );
+    socket.emit("game:surrender", player, gameId);
   }
 
   //#TODO
