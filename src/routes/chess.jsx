@@ -385,31 +385,37 @@ export default function Chess() {
         </div>
       </div>
       {promotionState && (
-        <div className="absolute flex flex-row bg-slate-600">
-          <button
-            className="aspect-square w-16 text-white font-bold hover:bg-gray-700"
-            onClick={() => promotePawn("rook")}
-          >
-            Rook
-          </button>
-          <button
-            className="aspect-square w-16 text-white font-bold hover:bg-gray-700"
-            onClick={() => promotePawn("knight")}
-          >
-            Knight
-          </button>
-          <button
-            className="aspect-square w-16 text-white font-bold hover:bg-gray-700"
-            onClick={() => promotePawn("bishop")}
-          >
-            Bishop
-          </button>
-          <button
-            className="aspect-square w-16 text-white font-bold hover:bg-gray-700"
-            onClick={() => promotePawn("queen")}
-          >
-            Queen
-          </button>
+        <div className="absolute flex flex-col bg-neutral-white p-2 rounded-md
+          top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <h1 className="text-center text-2xl font-bold">
+            Promote Pawn!
+          </h1>
+          <div className="flex flex-row">
+            <button
+              className="aspect-square w-16 text-white bg-neutral-white font-bold hover:invert"
+              onClick={() => promotePawn("rook")}
+            >
+              Rook
+            </button>
+            <button
+              className="aspect-square w-16 text-white bg-neutral-white font-bold hover:invert"
+              onClick={() => promotePawn("knight")}
+            >
+              Knight
+            </button>
+            <button
+              className="aspect-square w-16 text-white bg-neutral-white font-bold hover:invert"
+              onClick={() => promotePawn("bishop")}
+            >
+              Bishop
+            </button>
+            <button
+              className="aspect-square w-16 text-white bg-neutral-white font-bold hover:invert"
+              onClick={() => promotePawn("queen")}
+            >
+              Queen
+            </button>
+          </div>
         </div>
       )}
     </div>
