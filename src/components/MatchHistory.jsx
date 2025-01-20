@@ -53,7 +53,7 @@ const MatchHistory = ({ uid }) => {
                                             <p className="self-center flex-grow">{match.last_updated}</p>
                                             <button
                                                 disabled={true}
-                                                className="p-2 px-4 rounded-md bg-accent-green hover:brightness-125 disabled:brightness-75"
+                                                className="p-2 px-4 rounded-md bg-accent-green text-text-white hover:brightness-125 disabled:brightness-75 drop-shadow-xl"
                                                 >
                                                 Replay
                                             </button>

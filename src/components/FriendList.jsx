@@ -65,36 +65,45 @@ const FriendList = ({uid}) => {
       {isLoading ? (
         <LoadingSpinner />
       ) : (
-        <div className="w-1/2 h-full bg-accent-blue mx-auto">
+        <div className="w-full md:w-1/2 h-full mx-auto">
           {friendsData ? (
-            <ul className="w-full max-h-full p-2 overflow-auto text-text-white">
+            <ul className="flex flex-col md:grid w-full md:w-1/2 xl:w-1/3 max-h-full p-2 text-neutral-black">
               {friendsData.filter((friend) => friend.status != "denied").map((friend, index) => {
                 console.log(friend)
                 return (
                   <li
                     key={index}
-                    className="flex flex-row gap-5 h-16 items-center justify-evenly text-center align-baseline"
+                    className="flex flex-row gap-5 h-16 items-center justify-left text-left align-baseline"
                   >
                     <img
-                      className="aspect-square h-full w-auto rounded-full"
-                      src="profile.png"
+                      className="aspect-square h-2/3 md:h-full w-auto rounded-full"
+                      src="/profile.png"
                     ></img>
-                    <p className="max-w-24 overflow-hidden text-ellipsis">
+                    <p className="max-w-24 overflow-hidden text-ellipsis text-xl">
                       {friend.name}
                     </p>
-                    <button onClick={() => navigate("/profile/" + friend.uid)}>Profile</button>
-                    {friend.status === "pending" && currentUser.uid === uid && (
-                        <>
-                          <button onClick={() => handleAccept(friend.docId, index)}>Accept</button>
-                          <button onClick={() => handleDeny(friend.docId, index)}>Deny</button>
-                        </>
-                    )}
-                    {friend.status === "pending" && currentUser.uid !== uid && (
-                        <LoadingDots size={20}/>
-                    )}
-                    {currentUser && currentUser.uid === uid && friend.status != "pending" && (
-                      <button onClick={() => handleDeny(friend.docId, index)}>Delete</button>
-                    )}
+                    <div className="flex flex-row flex-grow items-center justify-end gap-2">
+                      <button 
+                      className="p-2 px-4 rounded-md bg-accent-green text-text-white hover:brightness-125 drop-shadow-xl"
+                      onClick={() => navigate("/profile/" + friend.uid)}>Profile</button>
+                      {friend.status === "pending" && currentUser.uid === uid && (
+                          <>
+                            <button 
+                            className="p-2 px-4 rounded-md bg-accent-green text-text-white hover:brightness-125 drop-shadow-xl" 
+                            onClick={() => handleAccept(friend.docId, index)}>Accept</button>
+                            <button 
+                            className="p-2 px-4 rounded-md bg-secondary-redish text-text-white hover:brightness-125 drop-shadow-xl" 
+                            onClick={() => handleDeny(friend.docId, index)}>Deny</button>
+                          </>
+                      )}
+                      {friend.status === "pending" && currentUser.uid !== uid && (
+                          <LoadingDots size={20}/>
+                      )}
+                      {currentUser && currentUser.uid === uid && friend.status != "pending" && (
+                        <button className="p-2 px-4 rounded-md bg-secondary-redish text-text-white hover:brightness-125 drop-shadow-xl" 
+                        onClick={() => handleDeny(friend.docId, index)}>Delete</button>
+                      )}
+                    </div>
                   </li>
                 )
               })}
