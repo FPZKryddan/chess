@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState } from "react";
+import {useState } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthProvider";
@@ -7,8 +7,7 @@ import { useSocketContext } from "../contexts/SocketProvider";
 import { ToastProvider, useToast } from "../contexts/ToastProvider";
 import LoadingDots from "./LoadingDots";
 
-const FriendList = ({uid}) => {
-  const [friendsData, setFriendsData] = useState(null);
+const FriendList = ({uid, friendsData, updateFriendsData, friendsFetching}) => {
   const [isLoading, setIsLoading] = useState(true);
   const socket = useSocketContext();
   const {createToast} = useToast();
@@ -17,24 +16,6 @@ const FriendList = ({uid}) => {
   console.log(currentUser)
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!uid) return;
-
-    const url = "http://localhost:3000/friends/" + uid;
-    const options = {
-      method: "GET",
-      headers: {
-        "Content-Type": "Application/Json",
-      },
-    };
-    fetch(url, options)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data.data);
-        setFriendsData(data.data);
-        setIsLoading(false);
-      });
-  }, [uid]);
 
   const handleAccept = (docId, index) => {
     if (!socket) return;
@@ -43,7 +24,7 @@ const FriendList = ({uid}) => {
     let newFriendsData = friendsData;
     newFriendsData[index].status = "Accepted";
 
-    setFriendsData(newFriendsData);
+    updateFriendsData(newFriendsData);
     createToast("Success", toastMsg)
     socket.emit("friend:accept", docId);
   };
@@ -55,14 +36,14 @@ const FriendList = ({uid}) => {
     let newFriendsData = friendsData;
     newFriendsData[index].status = "denied";
 
-    setFriendsData(newFriendsData);
+    updateFriendsData(newFriendsData);
     createToast("Success", toastMsg)
     socket.emit("friend:deny", docId);
   };
 
   return (
     <>
-      {isLoading ? (
+      {friendsFetching ? (
         <LoadingSpinner />
       ) : (
         <div className="w-full md:w-1/2 h-full mx-auto">

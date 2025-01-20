@@ -27,11 +27,11 @@ export default function Chess() {
   const [opponent, setOpponent] = useState({});
   const [winner, setWinner] = useState("");
 
-  const [simulatedIndex, setSimulatedIndex] = useState(-1);
+  const [simulatedMoveIndex, setSimulatedMoveIndex] = useState(-1);
   const [storedLiveBoard, setStoredLiveBoard] = useState([]);
 
   const [drawOfferShow, setDrawOfferShow] = useState(false);
-  const [drawOfferRequestSent, setdrawOfferRequestSent] = useState(false);
+  const [drawOfferRequestSent, setDrawOfferRequestSent] = useState(false);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -45,7 +45,7 @@ export default function Chess() {
     socket.on("game:update", (event) => {
       // go back to live if enemy moves
       setStoredLiveBoard([]);
-      setSimulatedIndex(-1);
+      setSimulatedMoveIndex(-1);
       setBoard(event.board);
 
       const team = event.w.uid == currentUser.uid ? "w" : "b";
@@ -74,13 +74,14 @@ export default function Chess() {
     })
 
     socket.on("game:drawdeclined", () => {
-      setdrawOfferRequestSent(false);
+      setDrawOfferRequestSent(false);
     })
 
     return () => {
       socket.off("game:update");
       socket.off("game:end");
       socket.off("game:drawreq")
+      socket.off("game:drawdeclined");
     }
 
   }, [currentUser, socket, gameId])
@@ -98,7 +99,7 @@ export default function Chess() {
 
   const handleClickSquare = (piece, x, y) => {
     if (!canPlay) return;
-    if (simulatedIndex != -1) return;
+    if (simulatedMoveIndex != -1) return;
     if ("piece" in heldPiece) {
       // if holding a piece attempt to drop it 
       if (attemptDrop(piece, x, y) == -1) {
@@ -289,7 +290,7 @@ export default function Chess() {
       simulatedBoard[to_y][to_x] = {piece: piece, color: color};
       idx++;
     }
-    setSimulatedIndex(moveIndex);
+    setSimulatedMoveIndex(moveIndex);
     
     if (storedLiveBoard.length == 0)
       setStoredLiveBoard(board);
@@ -307,7 +308,7 @@ export default function Chess() {
     if (storedLiveBoard != []) {
       setBoard(storedLiveBoard);
       setStoredLiveBoard([]);
-      setSimulatedIndex(-1);
+      setSimulatedMoveIndex(-1);
     }
   }
 
@@ -324,7 +325,7 @@ export default function Chess() {
     if (drawOfferRequestSent) return;
 
     createToast("Success", "Sent draw offer!");
-    setdrawOfferRequestSent(true);
+    setDrawOfferRequestSent(true);
     socket.emit("game:drawreq", gameId, player)
   }
 
@@ -339,7 +340,7 @@ export default function Chess() {
             {moveHistory.map((move, index) => (
               <li key={index}
                 className={`flex flex-row text-text-white hover:brightness-200 bg-primary-dark 
-                  cursor-pointer ${simulatedIndex >= index ? "brightness-150" : ""}`}
+                  cursor-pointer ${simulatedMoveIndex >= index ? "brightness-150" : ""}`}
                 onClick={() => simulateBoardToMove(index)}
               >
                 <p className="w-12 border-r-2 text-center">{index + 1}</p> <p className="w-full text-center">{move}</p>
@@ -350,10 +351,10 @@ export default function Chess() {
         <button
           className="rounded-b-md border-t-2 p-2 border-text-white
             text-text-white bg-accent-green disabled:bg-primary-dark"
-          disabled={simulatedIndex < 0}
+          disabled={simulatedMoveIndex < 0}
           onClick={() => backToLiveGame()}
         >
-          {simulatedIndex >= 0 
+          {simulatedMoveIndex >= 0 
           ? "Jump to live game"
           : "Live"
           }

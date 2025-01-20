@@ -2,33 +2,11 @@
 import { useEffect, useState } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 
-const MatchHistory = ({ uid }) => {
-    const [matchHistoryData, setMatchHistoryData] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        console.log("USER:" + uid)
-        if (!uid) return;
-
-        const url = "http://localhost:3000/user/history/" + uid
-        const options = {
-            method: "GET",
-            headers: {
-                "Content-Type": "Application/Json"
-            }
-        }
-        fetch(url, options)
-            .then((response) => response.json())
-            .then((matchHistory) => {
-                console.log(matchHistory.matchHistory)
-                setMatchHistoryData(matchHistory.matchHistory);
-                setIsLoading(false);
-            })
-    }, []);
+const MatchHistory = ({ uid, matchHistoryData, matchHistoryFetching }) => {
 
     return (
         <>
-            {isLoading ? (
+            {matchHistoryFetching ? (
                 <LoadingSpinner />
             ) : (
                 <div className="w-full md:w-1/2 h-ful mx-auto">
