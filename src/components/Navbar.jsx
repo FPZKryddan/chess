@@ -57,7 +57,7 @@ export default function Navbar() {
           onClick={() => navigate("/profile")}>
           <img
           className="size-10 mt-2 rounded-full"
-          src="profile.png"
+          src="/profile.png"
           alt="Profile"
           />
           <div className="hidden group-hover:inline-block h-full overflow-hidden whitespace-nowrap transition-all duration-200"

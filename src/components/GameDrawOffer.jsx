@@ -4,23 +4,16 @@ import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "./LoadingSpinner";
 import LoadingDots from "./LoadingDots";
 import { useSocketContext } from "../contexts/SocketProvider";
+import { ToastProvider, useToast } from "../contexts/ToastProvider";
 
 export const GameDrawOffer = ({gameId, opponent, close}) => {
 
-
+    const {createToast} = useToast();
     const socket = useSocketContext();
     const navigate = useNavigate();
 
     useEffect(() => {
         if (!socket) return;
-
-        socket.on("game:drawdeclined" , () => {
-            
-        })
-
-        return () => {
-            socket.off("game:drawdeclined");
-        }
 
     }, [socket]);
 

@@ -4,11 +4,14 @@ import LoadingSpinner from "./LoadingSpinner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthProvider";
 import { useSocketContext } from "../contexts/SocketProvider";
+import { ToastProvider, useToast } from "../contexts/ToastProvider";
+import LoadingDots from "./LoadingDots";
 
 const FriendList = ({uid}) => {
   const [friendsData, setFriendsData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const socket = useSocketContext();
+  const {createToast} = useToast();
 
   const { currentUser } = useAuth();
   console.log(currentUser)
@@ -33,13 +36,27 @@ const FriendList = ({uid}) => {
       });
   }, [uid]);
 
-  const handleAccept = (docId) => {
+  const handleAccept = (docId, index) => {
     if (!socket) return;
+    const friend = friendsData[index].name;
+    const toastMsg = "Accepted " + friend + "!";
+    let newFriendsData = friendsData;
+    newFriendsData[index].status = "Accepted";
+
+    setFriendsData(newFriendsData);
+    createToast("Success", toastMsg)
     socket.emit("friend:accept", docId);
   };
 
-  const handleDeny = (docId) => {
+  const handleDeny = (docId, index) => {
     if (!socket) return;
+    const friend = friendsData[index].name;
+    const toastMsg = "Denied " + friend + "!";
+    let newFriendsData = friendsData;
+    newFriendsData[index].status = "denied";
+
+    setFriendsData(newFriendsData);
+    createToast("Success", toastMsg)
     socket.emit("friend:deny", docId);
   };
 
@@ -68,12 +85,15 @@ const FriendList = ({uid}) => {
                     <button onClick={() => navigate("/profile/" + friend.uid)}>Profile</button>
                     {friend.status === "pending" && currentUser.uid === uid && (
                         <>
-                          <button onClick={() => handleAccept(friend.docId)}>Accept</button>
-                          <button onClick={() => handleDeny(friend.docId)}>Deny</button>
+                          <button onClick={() => handleAccept(friend.docId, index)}>Accept</button>
+                          <button onClick={() => handleDeny(friend.docId, index)}>Deny</button>
                         </>
                     )}
-                    {currentUser && currentUser.uid !== uid && friend.status != "pending" && (
-                      <button onClick={() => handleDeny(friend.docId)}>Delete</button>
+                    {friend.status === "pending" && currentUser.uid !== uid && (
+                        <LoadingDots size={20}/>
+                    )}
+                    {currentUser && currentUser.uid === uid && friend.status != "pending" && (
+                      <button onClick={() => handleDeny(friend.docId, index)}>Delete</button>
                     )}
                   </li>
                 )

@@ -7,7 +7,7 @@ const ToastContext = createContext();
 export const ToastProvider = ({children}) => {
     const [toastList, setToastList] = useState([]);
 
-    const createToast = (type, message, duration) => {
+    const createToast = (type, message, duration=3000) => {
         const toast = {
             id: Math.random(),
             type: type,

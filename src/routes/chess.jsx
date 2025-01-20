@@ -8,6 +8,7 @@ import { validateMoves, commitMove, getPossibleMoves, isCheck, createBoard } fro
 import { GamePlayerHeader } from "../components/GamePlayerHeader";
 import { GameWinner } from "../components/GameWinner";
 import GameChat from "../components/GameChat";
+import { ToastProvider, useToast } from "../contexts/ToastProvider";
 
 import { HiFlag } from "react-icons/hi2";
 import { GameDrawOffer } from "../components/GameDrawOffer";
@@ -16,6 +17,7 @@ export default function Chess() {
   const { id: gameId } = useParams();
   const { currentUser } = useAuth();
   const socket = useSocketContext();
+  const {createToast} = useToast();
 
   const [board, setBoard] = useState([]);
   const [moveHistory, setMoveHistory] = useState([]);
@@ -96,6 +98,7 @@ export default function Chess() {
 
   const handleClickSquare = (piece, x, y) => {
     if (!canPlay) return;
+    if (simulatedIndex != -1) return;
     if ("piece" in heldPiece) {
       // if holding a piece attempt to drop it 
       if (attemptDrop(piece, x, y) == -1) {
@@ -308,7 +311,6 @@ export default function Chess() {
     }
   }
 
-  //#TODO
   const handleSurrender = () => {
     if (!socket) return;
     if (winner) return;
@@ -316,12 +318,12 @@ export default function Chess() {
     socket.emit("game:surrender", player, gameId);
   }
 
-  //#TODO
   const handleDraw = () => {
     if (!socket) return;
     if (winner) return;
     if (drawOfferRequestSent) return;
 
+    createToast("Success", "Sent draw offer!");
     setdrawOfferRequestSent(true);
     socket.emit("game:drawreq", gameId, player)
   }

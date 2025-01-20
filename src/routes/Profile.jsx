@@ -49,16 +49,14 @@ const Profile = () => {
   return (
     <div className="flex flex-col w-full h-full">
       <ProfileHeader userData={userData} friendStatus={friendStatus}/>
-      <div className="w-full h-fit bg-accent-green">
-        <ul className="w-1/2 items-center justify-center flex flex-row mx-auto gap-2">
-          <li className="w-1/2 text-center border-b-2 cursor-pointer" onClick={() => setBody("Match History")}>
+        <ul className="w-full md:w-1/2 items-center justify-center flex flex-row mx-auto gap-2">
+          <li className="w-full md:w-1/2 text-center border-b-2 cursor-pointer" onClick={() => setBody("Match History")}>
             Match History
           </li>
-          <li className="w-1/2 text-center border-b-2 cursor-pointer" onClick={() => setBody("Friend List")}>
+          <li className="w-full md:w-1/2 text-center border-b-2 cursor-pointer" onClick={() => setBody("Friend List")}>
             Friend List
           </li>
         </ul>
-      </div>
       <div>
         {body == "Match History"
         ? <MatchHistory uid={paramUid || authData.currentUser?.uid}/>
